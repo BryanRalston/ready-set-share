@@ -9,6 +9,7 @@ import {
   IoLogoPinterest,
   IoLinkOutline,
   IoCheckmarkCircle,
+  IoPencilOutline,
 } from 'react-icons/io5';
 import {
   getConnectedAccounts,
@@ -118,33 +119,44 @@ export default function ConnectedAccounts() {
               layout
             >
               <AnimatePresence mode="wait">
-                {isConnected && !isBeingDisconnected ? (
+                {isConnected && !isBeingDisconnected && editing !== platform.key ? (
                   <motion.div
                     key={`connected-${platform.key}`}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95, x: -20 }}
                     transition={{ duration: 0.25 }}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-sage-50 border border-sage-200"
+                    className="py-2.5 px-3 rounded-xl bg-sage-50 border border-sage-200"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-8 h-8 rounded-full ${platform.bgColor} flex items-center justify-center`}>
-                        <Icon className={`w-4 h-4 ${platform.color}`} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-medium text-brown">{platform.name}</span>
-                          <IoCheckmarkCircle className="w-3.5 h-3.5 text-sage-500" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-8 h-8 rounded-full ${platform.bgColor} flex items-center justify-center`}>
+                          <Icon className={`w-4 h-4 ${platform.color}`} />
                         </div>
-                        <span className="text-[10px] text-brown-light">@{account.username}</span>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium text-brown">{platform.name}</span>
+                            <IoCheckmarkCircle className="w-3.5 h-3.5 text-sage-500" />
+                          </div>
+                          <span className="text-[10px] text-brown-light">@{account.username}</span>
+                        </div>
                       </div>
+                      <button
+                        onClick={() => { setEditing(platform.key); setUsernameInput(account.username); }}
+                        className="text-[10px] text-sage-500 font-medium flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-sage-100 transition-colors"
+                      >
+                        <IoPencilOutline className="w-3 h-3" />
+                        Edit
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleDisconnect(platform.key)}
-                      className="text-[10px] text-brown-light hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
-                    >
-                      Disconnect
-                    </button>
+                    <div className="mt-1.5 ml-[42px]">
+                      <button
+                        onClick={() => handleDisconnect(platform.key)}
+                        className="text-[10px] text-brown-light/60 hover:text-red-500 transition-colors"
+                      >
+                        Remove account
+                      </button>
+                    </div>
                   </motion.div>
                 ) : editing === platform.key ? (
                   <motion.div
@@ -186,6 +198,12 @@ export default function ConnectedAccounts() {
                         className="px-3 py-2 rounded-lg bg-sage-500 text-white text-xs font-medium disabled:opacity-40 transition-opacity"
                       >
                         Save
+                      </button>
+                      <button
+                        onClick={() => { setEditing(null); setUsernameInput(''); }}
+                        className="px-3 py-2 rounded-lg bg-cream-100 text-brown-light text-xs font-medium hover:bg-cream-200 transition-colors"
+                      >
+                        Cancel
                       </button>
                     </div>
                   </motion.div>

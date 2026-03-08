@@ -252,6 +252,7 @@ export default function PostEditor({
                   <input
                     type="date"
                     value={scheduleDate}
+                    min={new Date().toISOString().split('T')[0]}
                     onChange={(e) => {
                       setScheduleDate(e.target.value);
                       onScheduleChange?.({ type: 'scheduled', date: e.target.value, time: scheduleTime });

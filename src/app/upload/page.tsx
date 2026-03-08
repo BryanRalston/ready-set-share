@@ -12,7 +12,8 @@ import { incrementPhotoCount } from '@/components/profile/BrandKit';
 import { getVoiceInstruction } from '@/lib/voice-matcher';
 import { getCurrentSeason } from '@/lib/seasonal';
 import { analyzeWreathPhoto, isGeminiConfigured } from '@/lib/gemini';
-import { IoArrowBackOutline, IoMicOutline, IoCreateOutline } from 'react-icons/io5';
+import { IoArrowBackOutline, IoMicOutline, IoCreateOutline, IoKeyOutline } from 'react-icons/io5';
+import Link from 'next/link';
 
 type UploadStep = 'choose' | 'analyzing' | 'results' | 'caption-choice';
 type CaptionMode = 'write' | 'voice' | null;
@@ -24,6 +25,8 @@ export default function UploadPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [captionMode, setCaptionMode] = useState<CaptionMode>(null);
+  const [skipAiGate, setSkipAiGate] = useState(false);
+  const aiConfigured = isGeminiConfigured();
 
   const handlePhotoSelected = useCallback(async (file: File) => {
     const url = URL.createObjectURL(file);
@@ -76,12 +79,14 @@ export default function UploadPage() {
         caption: 'Beautiful handcrafted wreath, made with love! Every detail is carefully chosen to bring warmth to your home.',
         hashtags: ['#wreath', '#handmade', '#homedecor', '#wreathmaking', '#crafts', '#doorwreath', '#seasonal', '#naturaldecor', '#homestyle', '#shopsmall'],
         platform: 'Instagram',
-        tip: 'Post between 11am-1pm for best engagement. Use stories to show the making process!',
+        tip: aiConfigured
+          ? 'Post between 11am-1pm for best engagement. Use stories to show the making process!'
+          : 'Basic suggestion — set up AI in Settings for personalized captions',
         postType: 'Single Post',
       });
       setStep('caption-choice');
     }
-  }, []);
+  }, [aiConfigured]);
 
   const handleClear = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -140,7 +145,38 @@ export default function UploadPage() {
     <AppShell title="Upload Photo" rightAction={backAction} showNotifications={false}>
       <div className="space-y-6">
         <AnimatePresence mode="wait">
-          {step === 'choose' && (
+          {step === 'choose' && !aiConfigured && !skipAiGate && (
+            <motion.div key="ai-gate" exit={{ opacity: 0, y: -12 }}>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-8 px-4"
+              >
+                <div className="w-14 h-14 rounded-full bg-sage-50 flex items-center justify-center mx-auto mb-4">
+                  <IoKeyOutline className="w-7 h-7 text-sage-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-brown font-[family-name:var(--font-heading)] mb-2">
+                  Set up AI captions first
+                </h3>
+                <p className="text-sm text-brown-light mb-6 max-w-[280px] mx-auto">
+                  To get personalized captions for your wreaths, you&apos;ll need to set up your free AI key.
+                </p>
+                <Link href="/profile">
+                  <button className="inline-flex items-center justify-center rounded-full font-medium px-5 py-2.5 text-base bg-sage-500 text-white hover:bg-sage-600 active:bg-sage-700 shadow-sm transition-colors">
+                    Go to Settings
+                  </button>
+                </Link>
+                <button
+                  onClick={() => setSkipAiGate(true)}
+                  className="block mx-auto mt-4 text-sm text-brown-light hover:text-brown transition-colors underline underline-offset-2"
+                >
+                  Continue without AI
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {step === 'choose' && (aiConfigured || skipAiGate) && (
             <motion.div key="choose" exit={{ opacity: 0, y: -12 }}>
               <motion.p
                 initial={{ opacity: 0 }}

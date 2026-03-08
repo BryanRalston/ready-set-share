@@ -23,6 +23,9 @@ import {
   IoCheckmarkCircle,
 } from 'react-icons/io5';
 import { formatDate } from '@/lib/utils';
+import { getPostCount } from '@/lib/posting-analytics';
+import { getCurrentStreak } from '@/lib/streak';
+import { getDrafts } from '@/lib/publisher';
 import VoiceProfileCard from '@/components/profile/VoiceProfile';
 import LandingPagePreview from '@/components/profile/LandingPagePreview';
 import QRGenerator from '@/components/profile/QRGenerator';
@@ -50,6 +53,16 @@ export default function ProfilePage() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(geminiApiKey || '');
   const [editingApiKey, setEditingApiKey] = useState(false);
+  const [postCount, setPostCount] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [draftCount, setDraftCount] = useState(0);
+
+  // Load real stats
+  useEffect(() => {
+    setPostCount(getPostCount());
+    setStreak(getCurrentStreak());
+    setDraftCount(getDrafts().length);
+  }, []);
 
   // Sync nameInput when displayName changes
   useEffect(() => {
@@ -87,6 +100,13 @@ export default function ProfilePage() {
   };
 
   const handleSaveApiKey = () => {
+    // Warn if user is clearing an existing API key
+    if (!apiKeyInput.trim() && geminiApiKey) {
+      const confirmed = window.confirm(
+        'Removing your API key will disable AI-generated captions. You\'ll get basic suggestions instead. Continue?'
+      );
+      if (!confirmed) return;
+    }
     updatePreferences({ geminiApiKey: apiKeyInput.trim() });
     setEditingApiKey(false);
   };
@@ -125,18 +145,18 @@ export default function ProfilePage() {
         <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
           <Card padding="sm" className="text-center" animate={false}>
             <IoImageOutline className="w-5 h-5 text-sage-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">0</p>
+            <p className="text-lg font-bold text-brown">{postCount}</p>
             <p className="text-[10px] text-brown-light">Total Posts</p>
           </Card>
           <Card padding="sm" className="text-center" animate={false}>
             <IoFlameOutline className="w-5 h-5 text-gold-300 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">0</p>
+            <p className="text-lg font-bold text-brown">{streak}</p>
             <p className="text-[10px] text-brown-light">Day Streak</p>
           </Card>
           <Card padding="sm" className="text-center" animate={false}>
             <IoCalendarOutline className="w-5 h-5 text-sage-400 mx-auto mb-1" />
-            <p className="text-[10px] text-brown-light mt-1">Member since</p>
-            <p className="text-xs font-medium text-brown">{memberSince}</p>
+            <p className="text-lg font-bold text-brown">{draftCount}</p>
+            <p className="text-[10px] text-brown-light">Drafts</p>
           </Card>
         </motion.div>
 

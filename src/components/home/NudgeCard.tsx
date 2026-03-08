@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { getCurrentNudge, dismissNudge, type Nudge } from '@/lib/nudges';
+import { isGeminiConfigured } from '@/lib/gemini';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import {
@@ -11,6 +12,7 @@ import {
   IoFlameOutline,
   IoBulbOutline,
   IoCloseOutline,
+  IoKeyOutline,
 } from 'react-icons/io5';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -18,6 +20,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   calendar: IoCalendarOutline,
   fire: IoFlameOutline,
   bulb: IoBulbOutline,
+  key: IoKeyOutline,
 };
 
 const TYPE_STYLES: Record<string, { bg: string; border: string; iconBg: string; iconColor: string }> = {
@@ -34,6 +37,17 @@ export default function NudgeCard() {
   const opacity = useTransform(x, [-150, 0, 150], [0, 1, 0]);
 
   useEffect(() => {
+    // API key nudge takes priority over all others
+    if (!isGeminiConfigured()) {
+      setNudge({
+        id: 'setup-ai-key',
+        message: 'Get personalized captions for your wreaths — it\'s free!',
+        type: 'tip',
+        action: 'setup-ai' as Nudge['action'],
+        icon: 'key',
+      });
+      return;
+    }
     const n = getCurrentNudge();
     setNudge(n);
   }, []);
@@ -89,9 +103,15 @@ export default function NudgeCard() {
                   transition={{ delay: 0.3 }}
                   className="mt-2"
                 >
-                  <Link href={nudge.action === 'upload' ? '/upload' : '/calendar'}>
+                  <Link href={
+                    nudge.action === 'upload' ? '/upload'
+                    : (nudge.action as string) === 'setup-ai' ? '/profile'
+                    : '/calendar'
+                  }>
                     <Button size="sm" variant="secondary">
-                      {nudge.action === 'upload' ? 'Upload a Photo' : 'Schedule a Post'}
+                      {nudge.action === 'upload' ? 'Upload a Photo'
+                        : (nudge.action as string) === 'setup-ai' ? 'Set up AI captions'
+                        : 'Schedule a Post'}
                     </Button>
                   </Link>
                 </motion.div>

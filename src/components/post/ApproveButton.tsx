@@ -7,6 +7,7 @@ import {
   IoSparkles,
   IoCopyOutline,
   IoCloseCircle,
+  IoOpenOutline,
 } from 'react-icons/io5';
 
 interface ApproveButtonProps {
@@ -126,13 +127,35 @@ export default function ApproveButton({
     if (isScheduled) {
       return 'Schedule Post';
     }
-    return 'Copy Caption & Save Draft';
+    return 'Approve & Copy';
   };
 
   const label = getButtonLabel();
 
   return (
     <div className="relative">
+      {/* How it works — shown before approval */}
+      <AnimatePresence>
+        {!approved && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ delay: 0.1 }}
+            className="mb-4"
+          >
+            <div className="px-4 py-3 rounded-xl bg-cream-50 border border-cream-200">
+              <p className="text-xs font-semibold text-brown mb-1.5">How it works</p>
+              <ol className="text-xs text-brown-light space-y-1 list-decimal list-inside">
+                <li>Tap <span className="font-medium text-brown">Approve &amp; Copy</span> below</li>
+                <li>Your caption is copied to your clipboard</li>
+                <li>Open Instagram or Pinterest and paste it into a new post</li>
+              </ol>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showConfetti && (
           <div className="absolute inset-0 pointer-events-none z-10 overflow-visible">
@@ -259,7 +282,7 @@ export default function ApproveButton({
         )}
       </AnimatePresence>
 
-      {/* Post-save nudge */}
+      {/* Post-save nudge with direct links */}
       <AnimatePresence>
         {approved && (
           <motion.div
@@ -267,11 +290,33 @@ export default function ApproveButton({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.0 }}
           >
-            <div className="mt-3 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-sage-50 border border-sage-200">
-              <IoCheckmarkCircle className="w-4 h-4 text-sage-500 shrink-0" />
-              <p className="text-xs text-brown-light">
-                <span className="font-medium text-sage-700">Draft saved!</span> Open your social app and paste your caption
-              </p>
+            <div className="mt-3 px-4 py-3 rounded-xl bg-sage-50 border border-sage-200">
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <IoCheckmarkCircle className="w-4 h-4 text-sage-500 shrink-0" />
+                <p className="text-xs text-brown-light">
+                  <span className="font-medium text-sage-700">Caption copied!</span> Now open your social media app and paste.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white border border-sage-200 text-xs font-medium text-brown hover:bg-sage-50 transition-colors"
+                >
+                  <IoOpenOutline className="w-3.5 h-3.5" />
+                  Open Instagram
+                </a>
+                <a
+                  href="https://pinterest.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white border border-sage-200 text-xs font-medium text-brown hover:bg-sage-50 transition-colors"
+                >
+                  <IoOpenOutline className="w-3.5 h-3.5" />
+                  Open Pinterest
+                </a>
+              </div>
             </div>
           </motion.div>
         )}
