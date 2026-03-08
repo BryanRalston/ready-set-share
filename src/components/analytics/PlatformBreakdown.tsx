@@ -9,6 +9,8 @@ export default function PlatformBreakdown() {
   const data = getPlatformBreakdown();
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
+  if (data.length === 0 || total === 0) return null;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

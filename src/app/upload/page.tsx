@@ -106,6 +106,20 @@ export default function UploadPage() {
   };
 
   const handleCreatePost = () => {
+    // Save AI analysis + image data to sessionStorage so the post editor can pick it up
+    if (analysisResult) {
+      const pendingPost = {
+        caption: analysisResult.caption,
+        hashtags: analysisResult.hashtags,
+        platform: analysisResult.platform,
+        tip: analysisResult.tip,
+        postType: analysisResult.postType,
+        imageUrl: previewUrl || '',
+      };
+      try {
+        sessionStorage.setItem('wreath-social-pending-post', JSON.stringify(pendingPost));
+      } catch { /* sessionStorage may be unavailable */ }
+    }
     router.push('/post/new');
   };
 

@@ -7,7 +7,6 @@ import {
   getCurrentStreak,
   getStreakCalendar,
   getMilestone,
-  seedMockStreakData,
   type StreakDay,
   type Milestone,
 } from '@/lib/streak';
@@ -20,7 +19,6 @@ export default function StreakTracker() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    seedMockStreakData();
     setStreak(getCurrentStreak());
     setCalendar(getStreakCalendar(14));
     setMilestone(getMilestone(getCurrentStreak()));

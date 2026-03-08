@@ -3,12 +3,14 @@
 import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { getMonthlyRecapData } from '@/lib/analytics-data';
+import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import {
   IoShareOutline,
   IoFlameOutline,
   IoTrophyOutline,
   IoPricetagOutline,
+  IoCalendarOutline,
 } from 'react-icons/io5';
 
 const sectionVariants = {
@@ -27,6 +29,8 @@ export default function MonthlyRecap() {
   const recap = getMonthlyRecapData();
 
   const handleShareRecap = useCallback(async () => {
+    if (!recap) return;
+
     // Create a canvas image for sharing
     const canvas = document.createElement('canvas');
     canvas.width = 1080;
@@ -104,6 +108,18 @@ export default function MonthlyRecap() {
     }, 'image/png');
   }, [recap]);
 
+  // No recap data — show a lightweight placeholder
+  if (!recap) {
+    return (
+      <Card padding="md" className="text-center">
+        <IoCalendarOutline className="w-8 h-8 text-sage-300 mx-auto mb-2" />
+        <p className="text-sm text-brown-light">
+          Your monthly recap will appear here once you start posting.
+        </p>
+      </Card>
+    );
+  }
+
   return (
     <motion.div
       variants={sectionVariants}
@@ -161,18 +177,22 @@ export default function MonthlyRecap() {
               <span className="text-[10px] bg-sage-50 text-sage-600 px-2 py-0.5 rounded-full">
                 {recap.bestPost.platform}
               </span>
-              <span className="text-[10px] text-brown-light">
-                {recap.bestPost.engagement} engagements
-              </span>
+              {recap.bestPost.engagement > 0 && (
+                <span className="text-[10px] text-brown-light">
+                  {recap.bestPost.engagement} engagements
+                </span>
+              )}
             </div>
           </motion.div>
 
           {/* Top hashtag */}
-          <motion.div variants={itemVariants} className="flex items-center gap-2">
-            <IoPricetagOutline className="w-4 h-4 text-sage-400" />
-            <span className="text-xs text-brown-light">Top hashtag:</span>
-            <span className="text-xs font-semibold text-sage-600">{recap.topHashtag}</span>
-          </motion.div>
+          {recap.topHashtag !== '--' && (
+            <motion.div variants={itemVariants} className="flex items-center gap-2">
+              <IoPricetagOutline className="w-4 h-4 text-sage-400" />
+              <span className="text-xs text-brown-light">Top hashtag:</span>
+              <span className="text-xs font-semibold text-sage-600">{recap.topHashtag}</span>
+            </motion.div>
+          )}
         </div>
 
         {/* Share button */}

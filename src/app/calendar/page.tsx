@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   startOfMonth,
@@ -21,14 +21,45 @@ import Button from '@/components/ui/Button';
 import { IoChevronBackOutline, IoChevronForwardOutline, IoCameraOutline } from 'react-icons/io5';
 import Link from 'next/link';
 import BestTimes from '@/components/calendar/BestTimes';
+import { getDrafts, type PostDraft } from '@/lib/publisher';
 
-// Placeholder: in production this comes from Supabase
-const SCHEDULED_POSTS: { id: string; date: string; caption: string; platform: string }[] = [];
+interface CalendarPost {
+  id: string;
+  date: string;
+  caption: string;
+  platform: string;
+}
+
+function draftsToCalendarPosts(drafts: PostDraft[]): CalendarPost[] {
+  const posts: CalendarPost[] = [];
+  for (const draft of drafts) {
+    if (!draft.scheduledFor) continue;
+    // Create one entry per platform (or a single "draft" entry if no platforms)
+    const platforms = draft.platforms.length > 0 ? draft.platforms : ['draft'];
+    for (const platform of platforms) {
+      posts.push({
+        id: draft.id,
+        date: draft.scheduledFor,
+        caption: draft.caption,
+        platform,
+      });
+    }
+  }
+  return posts;
+}
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [direction, setDirection] = useState(0);
+  const [drafts, setDrafts] = useState<PostDraft[]>([]);
+
+  useEffect(() => {
+    setDrafts(getDrafts());
+  }, []);
+
+  const scheduledPosts = useMemo(() => draftsToCalendarPosts(drafts), [drafts]);
+  const unscheduledDrafts = useMemo(() => drafts.filter((d) => !d.scheduledFor), [drafts]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -41,7 +72,7 @@ export default function CalendarPage() {
   );
 
   const postsForDate = (date: Date) =>
-    SCHEDULED_POSTS.filter((p) => isSameDay(new Date(p.date), date));
+    scheduledPosts.filter((p) => isSameDay(new Date(p.date), date));
 
   const selectedPosts = selectedDate ? postsForDate(selectedDate) : [];
 
@@ -182,8 +213,37 @@ export default function CalendarPage() {
         {/* Best Times heatmap */}
         <BestTimes />
 
-        {/* Empty state when no date selected */}
-        {!selectedDate && SCHEDULED_POSTS.length === 0 && (
+        {/* Unscheduled drafts section */}
+        {unscheduledDrafts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-3"
+          >
+            <h3 className="font-semibold text-brown text-sm font-[family-name:var(--font-heading)]">
+              Unscheduled Drafts
+            </h3>
+            {unscheduledDrafts.map((draft) => (
+              <Link key={draft.id} href={`/post/${draft.id}`}>
+                <Card className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-cream-200 flex items-center justify-center text-lg">
+                    📝
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-brown line-clamp-1">{draft.caption}</p>
+                    <span className="text-[10px] bg-cream-100 text-brown-light px-2 py-0.5 rounded-full">
+                      No date set
+                    </span>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Empty state when no date selected and no drafts at all */}
+        {!selectedDate && drafts.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -215,10 +275,10 @@ export default function CalendarPage() {
                 </motion.span>
               </div>
               <h3 className="font-semibold text-brown mb-1 font-[family-name:var(--font-heading)]">
-                Your calendar is wide open!
+                No posts scheduled yet
               </h3>
               <p className="text-sm text-brown-light mb-4 max-w-[260px] mx-auto">
-                Upload a wreath photo and we&apos;ll help you plan the perfect posting schedule
+                Upload a wreath photo to get started!
               </p>
               <Link href="/upload">
                 <Button size="md">Upload a Photo</Button>

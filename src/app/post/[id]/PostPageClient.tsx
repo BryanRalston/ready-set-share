@@ -10,20 +10,61 @@ import StoryCreator from '@/components/post/StoryCreator';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { IoBookmarkOutline, IoPhonePortraitOutline } from 'react-icons/io5';
-import { publishPost, saveDraft, type PublishResult } from '@/lib/publisher';
+import { publishPost, saveDraft, getDraftById, type PublishResult } from '@/lib/publisher';
+import { recordPost } from '@/lib/streak';
 
-// Mock post data — in production this would come from localStorage or state
+// Fallback data — used only when no pending post or draft is found
 const MOCK_POST = {
   caption: 'Beautiful handcrafted wreath, made with love! Every detail is carefully chosen to bring warmth to your home.',
   hashtags: ['#wreath', '#handmade', '#homedecor', '#wreathmaking', '#crafts', '#doorwreath', '#seasonal', '#naturaldecor', '#homestyle', '#shopsmall'],
   platform: 'Instagram',
   tip: 'Post between 11am-1pm for best engagement.',
   postType: 'Single Post',
-  imageUrl: '', // In production, from upload flow
+  imageUrl: '',
 };
+
+function loadPostData(id: string) {
+  if (id === 'new') {
+    // Try loading from sessionStorage (set by the upload flow)
+    try {
+      const raw = sessionStorage.getItem('wreath-social-pending-post');
+      if (raw) {
+        sessionStorage.removeItem('wreath-social-pending-post');
+        const parsed = JSON.parse(raw);
+        return {
+          caption: parsed.caption || '',
+          hashtags: parsed.hashtags || [],
+          platform: parsed.platform || 'Instagram',
+          tip: parsed.tip || '',
+          postType: parsed.postType || 'Single Post',
+          imageUrl: parsed.imageUrl || '',
+        };
+      }
+    } catch { /* sessionStorage may be unavailable */ }
+    // No pending post — return empty editor
+    return { caption: '', hashtags: [], platform: 'Instagram', tip: '', postType: 'Single Post', imageUrl: '' };
+  }
+
+  // Try loading a saved draft by ID
+  const draft = getDraftById(id);
+  if (draft) {
+    return {
+      caption: draft.caption,
+      hashtags: draft.hashtags,
+      platform: 'Instagram',
+      tip: '',
+      postType: 'Single Post',
+      imageUrl: draft.imageUrl || '',
+    };
+  }
+
+  // Nothing found — fall back to mock
+  return MOCK_POST;
+}
 
 export default function PostPageClient({ id }: { id: string }) {
   const router = useRouter();
+  const [postData] = useState(() => loadPostData(id));
   const [scheduleType, setScheduleType] = useState<'now' | 'scheduled'>('now');
   const [scheduleDate, setScheduleDate] = useState('');
   const [approving, setApproving] = useState(false);
@@ -33,20 +74,25 @@ export default function PostPageClient({ id }: { id: string }) {
   const handleApprove = async () => {
     setApproving(true);
 
-    const postData = {
-      caption: MOCK_POST.caption,
-      hashtags: MOCK_POST.hashtags,
-      imageUrl: MOCK_POST.imageUrl || undefined,
+    const publishPayload = {
+      caption: postData.caption,
+      hashtags: postData.hashtags,
+      imageUrl: postData.imageUrl || undefined,
       platforms: [] as string[],
       scheduledFor: scheduleType === 'scheduled' ? scheduleDate : undefined,
     };
 
     // Always copy to clipboard + save as draft
-    saveDraft(postData);
+    saveDraft(publishPayload);
 
     try {
-      const { results } = await publishPost(postData);
+      const { results } = await publishPost(publishPayload);
       setPublishResults(results);
+
+      // Record the post for streak tracking if clipboard copy succeeded
+      if (results.some(r => r.success)) {
+        recordPost();
+      }
     } catch {
       setPublishResults([{
         platform: 'clipboard',
@@ -75,10 +121,10 @@ export default function PostPageClient({ id }: { id: string }) {
         className="space-y-6"
       >
         <PostEditor
-          initialCaption={MOCK_POST.caption}
-          initialHashtags={MOCK_POST.hashtags}
-          initialPlatform={MOCK_POST.platform}
-          imageUrl={MOCK_POST.imageUrl || undefined}
+          initialCaption={postData.caption}
+          initialHashtags={postData.hashtags}
+          initialPlatform={postData.platform}
+          imageUrl={postData.imageUrl || undefined}
           onScheduleChange={(s) => {
             setScheduleType(s.type);
             if (s.date) setScheduleDate(s.date);
@@ -114,17 +160,17 @@ export default function PostPageClient({ id }: { id: string }) {
         </motion.div>
 
         <AnimatePresence>
-          {createStory && MOCK_POST.imageUrl && (
+          {createStory && postData.imageUrl && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <StoryCreator imageUrl={MOCK_POST.imageUrl} />
+              <StoryCreator imageUrl={postData.imageUrl} />
             </motion.div>
           )}
-          {createStory && !MOCK_POST.imageUrl && (
+          {createStory && !postData.imageUrl && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

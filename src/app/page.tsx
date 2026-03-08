@@ -1,13 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/lib/user-context';
 import AppShell from '@/components/layout/AppShell';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import {
-  IoCameraOutline,
   IoSparklesOutline,
   IoFlameOutline,
   IoAddOutline,
@@ -19,6 +18,9 @@ import NudgeCard from '@/components/home/NudgeCard';
 import SeasonalTip from '@/components/home/SeasonalTip';
 import StreakTracker from '@/components/home/StreakTracker';
 import DraftsList from '@/components/home/DraftsList';
+import { getDrafts, type PostDraft } from '@/lib/publisher';
+import { getCurrentStreak } from '@/lib/streak';
+import { getPostCount } from '@/lib/posting-analytics';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -27,13 +29,24 @@ function getGreeting(): string {
   return 'Good evening';
 }
 
-const MOCK_UPCOMING_POSTS: { id: string; caption: string; platform: string; scheduledAt: string }[] = [];
-
 export default function HomePage() {
   const { displayName } = useUser();
   const greeting = useMemo(() => getGreeting(), []);
 
-  const hasPosts = MOCK_UPCOMING_POSTS.length > 0;
+  const [drafts, setDrafts] = useState<PostDraft[]>([]);
+  const [postCount, setPostCount] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [scheduledCount, setScheduledCount] = useState(0);
+
+  useEffect(() => {
+    const allDrafts = getDrafts();
+    setDrafts(allDrafts);
+    setPostCount(getPostCount());
+    setStreak(getCurrentStreak());
+    setScheduledCount(allDrafts.filter(d => d.scheduledFor).length);
+  }, []);
+
+  const hasPosts = drafts.length > 0;
 
   return (
     <AppShell>
@@ -62,17 +75,17 @@ export default function HomePage() {
         >
           <Card padding="sm" className="text-center">
             <IoImageOutline className="w-5 h-5 text-sage-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">0</p>
+            <p className="text-lg font-bold text-brown">{postCount}</p>
             <p className="text-[10px] text-brown-light">Posts</p>
           </Card>
           <Card padding="sm" className="text-center">
             <IoFlameOutline className="w-5 h-5 text-gold-300 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">0</p>
+            <p className="text-lg font-bold text-brown">{streak}</p>
             <p className="text-[10px] text-brown-light">Day Streak</p>
           </Card>
           <Card padding="sm" className="text-center">
             <IoCalendarOutline className="w-5 h-5 text-sage-400 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">0</p>
+            <p className="text-lg font-bold text-brown">{scheduledCount}</p>
             <p className="text-[10px] text-brown-light">Scheduled</p>
           </Card>
         </motion.div>
@@ -150,23 +163,32 @@ export default function HomePage() {
                 View all
               </Link>
             </div>
-            {MOCK_UPCOMING_POSTS.map((post, i) => (
+            {drafts.map((draft, i) => (
               <motion.div
-                key={post.id}
+                key={draft.id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
               >
-                <Link href={`/post/${post.id}`}>
+                <Link href={`/post/${draft.id}`}>
                   <Card className="flex items-start gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-cream-200 flex items-center justify-center text-2xl shrink-0">
-                      🌿
+                    <div className="w-14 h-14 rounded-xl bg-cream-200 flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+                      {draft.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={draft.imageUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span>🌿</span>
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-brown line-clamp-2">{post.caption}</p>
+                      <p className="text-sm text-brown line-clamp-2">{draft.caption}</p>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-[10px] bg-sage-50 text-sage-600 px-2 py-0.5 rounded-full">{post.platform}</span>
-                        <span className="text-[10px] text-brown-light">{post.scheduledAt}</span>
+                        {draft.platforms.map(p => (
+                          <span key={p} className="text-[10px] bg-sage-50 text-sage-600 px-2 py-0.5 rounded-full">{p}</span>
+                        ))}
+                        {draft.scheduledFor && (
+                          <span className="text-[10px] text-brown-light">{new Date(draft.scheduledFor).toLocaleDateString()}</span>
+                        )}
                       </div>
                     </div>
                   </Card>
