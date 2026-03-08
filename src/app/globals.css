@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-sage-50: #f0f5ee;
+  --color-sage-100: #dce8d8;
+  --color-sage-200: #b9d1b1;
+  --color-sage-300: #A8C5A0;
+  --color-sage-400: #8fb284;
+  --color-sage-500: #7C9A6E;
+  --color-sage-600: #637b58;
+  --color-sage-700: #4a5c42;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-cream-50: #FFFCF7;
+  --color-cream-100: #FDF6EC;
+  --color-cream-200: #F8E8D0;
+
+  --color-gold-50: #faf3eb;
+  --color-gold-100: #f0dcc6;
+  --color-gold-200: #e5c5a0;
+  --color-gold-300: #D4A574;
+  --color-gold-400: #c48f58;
+
+  --color-eucalyptus: #A8C5A0;
+  --color-eucalyptus-light: #c4dbbe;
+
+  --color-brown: #6B4F3A;
+  --color-brown-light: #8B6F5A;
+  --color-brown-dark: #4a3628;
+
+  --color-dark-bg: #1a2e1a;
+  --color-dark-card: #243524;
+  --color-dark-text: #FDF6EC;
+  --color-dark-accent: #A8C5A0;
+  --color-dark-highlight: #D4A574;
+  --color-dark-border: #2d4a2d;
+  --color-dark-muted: #8B9B83;
+
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #FDF6EC;
+  color: #6B4F3A;
+  font-family: var(--font-body);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Dark mode */
+.dark body,
+html.dark body {
+  background-color: var(--color-dark-bg);
+  color: var(--color-dark-text);
+}
+
+html.dark .bg-cream-100 {
+  background-color: var(--color-dark-bg);
+}
+
+html.dark .bg-cream-50,
+html.dark .bg-cream-200 {
+  background-color: var(--color-dark-card);
+}
+
+html.dark .bg-white {
+  background-color: var(--color-dark-card);
+}
+
+html.dark .bg-white\/80 {
+  background-color: rgba(36, 53, 36, 0.8);
+}
+
+html.dark .bg-cream-100\/80 {
+  background-color: rgba(26, 46, 26, 0.8);
+}
+
+html.dark .text-brown {
+  color: var(--color-dark-text);
+}
+
+html.dark .text-brown-light {
+  color: var(--color-dark-muted);
+}
+
+html.dark .text-brown-light\/40 {
+  color: rgba(139, 155, 131, 0.4);
+}
+
+html.dark .text-brown-light\/60 {
+  color: rgba(139, 155, 131, 0.6);
+}
+
+html.dark .border-cream-200 {
+  border-color: var(--color-dark-border);
+}
+
+html.dark .border-t.border-cream-200 {
+  border-color: var(--color-dark-border);
+}
+
+html.dark .bg-sage-50 {
+  background-color: rgba(36, 53, 36, 0.6);
+}
+
+html.dark .bg-gold-50 {
+  background-color: rgba(212, 165, 116, 0.1);
+}
+
+html.dark input,
+html.dark textarea {
+  background-color: var(--color-dark-bg);
+  color: var(--color-dark-text);
+  border-color: var(--color-dark-border);
+}
+
+html.dark input:focus,
+html.dark textarea:focus {
+  background-color: var(--color-dark-card);
+}
+
+/* Smooth transition for all dark-mode-affected elements */
+html.dark * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
