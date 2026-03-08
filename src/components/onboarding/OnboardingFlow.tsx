@@ -178,26 +178,44 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         <IoOpenOutline className="w-4 h-4" />
       </a>
 
-      {/* API key input with show/hide toggle */}
-      <div className="relative w-full max-w-xs mb-3">
+      {/* API key input */}
+      <div className="w-full max-w-xs mb-3">
         <input
-          type={showKey ? 'text' : 'password'}
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
+          type="text"
+          inputMode="text"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          value={showKey ? apiKey : apiKey ? '•'.repeat(Math.min(apiKey.length, 30)) : ''}
+          onChange={(e) => {
+            // If showing, accept input directly. If masked, only accept if it looks like a paste (not dots).
+            if (showKey || !apiKey || !e.target.value.includes('•')) {
+              setApiKey(e.target.value);
+            }
+          }}
+          onPaste={(e) => {
+            e.preventDefault();
+            const pasted = e.clipboardData.getData('text').trim();
+            setApiKey(pasted);
+            setShowKey(false);
+          }}
           placeholder="Paste your API key here"
-          className="w-full px-4 py-3 pr-11 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors"
+          className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && apiKey.trim()) handleNext();
           }}
         />
-        <button
-          type="button"
-          onClick={() => setShowKey((v) => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-brown-light/50 hover:text-brown-light transition-colors"
-          aria-label={showKey ? 'Hide API key' : 'Show API key'}
-        >
-          {showKey ? <IoEyeOffOutline className="w-5 h-5" /> : <IoEyeOutline className="w-5 h-5" />}
-        </button>
+        <div className="flex justify-end mt-1.5">
+          <button
+            type="button"
+            onClick={() => setShowKey((v) => !v)}
+            className="inline-flex items-center gap-1 text-xs text-brown-light/50 hover:text-brown-light transition-colors"
+          >
+            {showKey ? <IoEyeOffOutline className="w-3.5 h-3.5" /> : <IoEyeOutline className="w-3.5 h-3.5" />}
+            {showKey ? 'Hide' : 'Show'} key
+          </button>
+        </div>
       </div>
 
       <p className="text-xs text-brown-light/50 mb-4">
