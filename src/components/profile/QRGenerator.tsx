@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import { getConnectedAccounts } from '@/lib/social-accounts';
 import { IoQrCodeOutline, IoDownloadOutline } from 'react-icons/io5';
 
 type LinkOption = 'landing' | 'instagram' | 'pinterest' | 'custom';
@@ -24,21 +25,38 @@ export default function QRGenerator() {
   const [generated, setGenerated] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const accounts = getConnectedAccounts();
+  const instagramAccount = accounts.find(a => a.platform === 'instagram');
+  const pinterestAccount = accounts.find(a => a.platform === 'pinterest');
+
+  const needsAccountForSelected =
+    (selectedLink === 'instagram' && !instagramAccount) ||
+    (selectedLink === 'pinterest' && !pinterestAccount);
+
   const getUrl = useCallback(() => {
     switch (selectedLink) {
       case 'landing':
         return typeof window !== 'undefined' ? `${window.location.origin}/landing` : '/landing';
       case 'instagram':
-        return 'https://instagram.com/yourwreaths';
+        return instagramAccount
+          ? `https://instagram.com/${instagramAccount.username}`
+          : '';
       case 'pinterest':
-        return 'https://pinterest.com/yourwreaths';
+        return pinterestAccount
+          ? `https://pinterest.com/${pinterestAccount.username}`
+          : '';
       case 'custom':
         return customUrl || 'https://example.com';
     }
-  }, [selectedLink, customUrl]);
+  }, [selectedLink, customUrl, instagramAccount, pinterestAccount]);
 
   const generateQR = useCallback(async () => {
     const url = getUrl();
+    if (!url) {
+      setQrDataUrl('');
+      setGenerated(false);
+      return;
+    }
     const size = printSize === 'small' ? 200 : 400;
 
     try {
@@ -113,9 +131,16 @@ export default function QRGenerator() {
         </motion.div>
       )}
 
+      {/* Missing account message */}
+      {needsAccountForSelected && (
+        <p className="text-xs text-brown-light mb-3 text-center">
+          Add your social media usernames above to generate QR codes
+        </p>
+      )}
+
       {/* QR display */}
       <AnimatePresence mode="wait">
-        {qrDataUrl && (
+        {qrDataUrl && !needsAccountForSelected && (
           <motion.div
             key={qrDataUrl}
             initial={{ opacity: 0, scale: 0.8 }}

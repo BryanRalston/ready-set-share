@@ -61,13 +61,30 @@ export async function publishPost(post: {
 
 // --- Draft management (localStorage) ---
 
-export function saveDraft(post: Omit<PostDraft, 'id' | 'createdAt'>): PostDraft {
+export function saveDraft(post: Omit<PostDraft, 'id' | 'createdAt'>, id?: string): PostDraft {
+  const drafts = getDrafts();
+
+  // If an id is provided, try to update the existing draft in place
+  if (id) {
+    const existingIndex = drafts.findIndex(d => d.id === id);
+    if (existingIndex !== -1) {
+      const updated: PostDraft = {
+        ...post,
+        id,
+        createdAt: drafts[existingIndex].createdAt,
+      };
+      drafts[existingIndex] = updated;
+      localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
+      return updated;
+    }
+  }
+
+  // New draft — generate a fresh ID
   const draft: PostDraft = {
     ...post,
-    id: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: id || `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     createdAt: new Date().toISOString(),
   };
-  const drafts = getDrafts();
   drafts.unshift(draft);
   localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
   return draft;

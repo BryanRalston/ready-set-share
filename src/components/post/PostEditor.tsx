@@ -28,6 +28,7 @@ export default function PostEditor({
   imageUrl,
   onCaptionChange,
   onHashtagsChange,
+  onPlatformChange,
   onScheduleChange,
 }: PostEditorProps) {
   const [caption, setCaption] = useState(initialCaption);
@@ -69,7 +70,10 @@ export default function PostEditor({
     const next = platforms.includes(p)
       ? platforms.filter(x => x !== p)
       : [...platforms, p];
-    if (next.length > 0) setPlatforms(next);
+    if (next.length > 0) {
+      setPlatforms(next);
+      onPlatformChange?.(next);
+    }
   };
 
   const handleScheduleChange = (type: 'now' | 'scheduled') => {

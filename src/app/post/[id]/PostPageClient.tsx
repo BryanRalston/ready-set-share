@@ -65,6 +65,9 @@ function loadPostData(id: string) {
 export default function PostPageClient({ id }: { id: string }) {
   const router = useRouter();
   const [postData] = useState(() => loadPostData(id));
+  const [caption, setCaption] = useState(postData.caption);
+  const [hashtags, setHashtags] = useState<string[]>(postData.hashtags);
+  const [platforms, setPlatforms] = useState<string[]>([postData.platform]);
   const [scheduleType, setScheduleType] = useState<'now' | 'scheduled'>('now');
   const [scheduleDate, setScheduleDate] = useState('');
   const [approving, setApproving] = useState(false);
@@ -75,15 +78,15 @@ export default function PostPageClient({ id }: { id: string }) {
     setApproving(true);
 
     const publishPayload = {
-      caption: postData.caption,
-      hashtags: postData.hashtags,
+      caption,
+      hashtags,
       imageUrl: postData.imageUrl || undefined,
-      platforms: [] as string[],
+      platforms,
       scheduledFor: scheduleType === 'scheduled' ? scheduleDate : undefined,
     };
 
-    // Always copy to clipboard + save as draft
-    saveDraft(publishPayload);
+    // Always copy to clipboard + save as draft (pass existing id for drafts)
+    saveDraft(publishPayload, id !== 'new' ? id : undefined);
 
     try {
       const { results } = await publishPost(publishPayload);
@@ -125,6 +128,9 @@ export default function PostPageClient({ id }: { id: string }) {
           initialHashtags={postData.hashtags}
           initialPlatform={postData.platform}
           imageUrl={postData.imageUrl || undefined}
+          onCaptionChange={setCaption}
+          onHashtagsChange={setHashtags}
+          onPlatformChange={setPlatforms}
           onScheduleChange={(s) => {
             setScheduleType(s.type);
             if (s.date) setScheduleDate(s.date);
