@@ -9,14 +9,14 @@ import {
   IoCalendarOutline, IoCalendar,
   IoPersonOutline, IoPerson,
   IoCameraOutline, IoCamera,
-  IoBarChartOutline, IoBarChart,
+  IoImagesOutline, IoImages,
 } from 'react-icons/io5';
 
 const navItems = [
   { href: '/', label: 'Home', icon: IoHomeOutline, activeIcon: IoHome },
   { href: '/upload', label: 'Upload', icon: IoCameraOutline, activeIcon: IoCamera },
+  { href: '/library', label: 'Library', icon: IoImagesOutline, activeIcon: IoImages },
   { href: '/calendar', label: 'Calendar', icon: IoCalendarOutline, activeIcon: IoCalendar },
-  { href: '/analytics', label: 'Analytics', icon: IoBarChartOutline, activeIcon: IoBarChart },
   { href: '/profile', label: 'Profile', icon: IoPersonOutline, activeIcon: IoPerson },
 ];
 

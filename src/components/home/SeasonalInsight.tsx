@@ -45,7 +45,7 @@ function SeasonIcon({ season }: { season: string }) {
   );
 }
 
-export default function SeasonalTip() {
+export default function SeasonalInsight() {
   const seasonInfo: SeasonInfo = useMemo(() => getCurrentSeason(), []);
 
   return (
@@ -62,7 +62,7 @@ export default function SeasonalTip() {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-brown text-sm font-[family-name:var(--font-heading)]">
-              {seasonInfo.icon} {seasonInfo.season} Wreath Season
+              {seasonInfo.icon} {seasonInfo.season} Content Ideas
             </h3>
             <p className="text-xs text-brown-light mt-0.5 leading-relaxed">
               {seasonInfo.contentTips[0]}

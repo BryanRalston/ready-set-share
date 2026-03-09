@@ -39,7 +39,7 @@ export default function AnalyticsPage() {
             <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)]">
               Your Growth
             </h2>
-            <p className="text-sm text-brown-light mt-0.5">See how your wreath business is blossoming</p>
+            <p className="text-sm text-brown-light mt-0.5">See how your content is performing</p>
           </motion.div>
 
           <motion.div variants={item}>
@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
           <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)]">
             Your Growth
           </h2>
-          <p className="text-sm text-brown-light mt-0.5">See how your wreath business is blossoming</p>
+          <p className="text-sm text-brown-light mt-0.5">See how your content is performing</p>
         </motion.div>
 
         {/* Growth stats */}

@@ -15,8 +15,8 @@ type Platform = 'instagram' | 'pinterest';
 
 export default function PostMockup({ caption, hashtags, imageUrl }: PostMockupProps) {
   const { displayName } = useUser();
-  const handle = displayName !== 'there' ? displayName.toLowerCase().replace(/\s+/g, '_') + '_wreaths' : 'my_wreath_shop';
-  const shopName = displayName !== 'there' ? `${displayName}'s Wreaths` : 'My Wreath Shop';
+  const handle = displayName !== 'there' ? displayName.toLowerCase().replace(/\s+/g, '_') + '_shop' : 'my_shop';
+  const shopName = displayName !== 'there' ? `${displayName}'s Shop` : 'My Shop';
   const initial = displayName !== 'there' ? displayName.charAt(0).toUpperCase() : 'W';
   const [platform, setPlatform] = useState<Platform>('instagram');
 

@@ -5,25 +5,25 @@ import DarkModeInit from "@/components/layout/DarkModeInit";
 import InstallPrompt from "@/components/layout/InstallPrompt";
 
 export const metadata: Metadata = {
-  title: "Wreath Social",
-  description: "Your AI-powered social media assistant for your wreath business",
+  title: "PostCraft",
+  description: "Your AI-powered social media assistant for small business",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Wreath Social",
+    title: "PostCraft",
   },
   openGraph: {
-    title: "Wreath Social",
-    description: "AI-powered social media for your wreath business. Upload a photo, get captions, hashtags, and a posting schedule.",
-    siteName: "Wreath Social",
+    title: "PostCraft",
+    description: "AI-powered social media for your small business. Upload a photo, get captions, hashtags, and a posting schedule.",
+    siteName: "PostCraft",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wreath Social",
-    description: "AI-powered social media for your wreath business",
+    title: "PostCraft",
+    description: "AI-powered social media for your small business",
   },
 };
 

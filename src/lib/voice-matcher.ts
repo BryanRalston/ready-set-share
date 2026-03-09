@@ -19,7 +19,7 @@ export interface VoiceProfile {
   editCount: number;
 }
 
-const STORAGE_KEY = 'wreath_caption_edits';
+const STORAGE_KEY = 'biz-social-caption-edits';
 const MIN_EDITS_FOR_PROFILE = 5;
 
 export function saveCaptionEdit(before: string, after: string): void {
@@ -114,12 +114,12 @@ function findCommonPhrases(edits: CaptionEdit[]): string[] {
     const afterWords = edit.after.toLowerCase();
     const beforeWords = edit.before.toLowerCase();
 
-    // Check for common wreath business phrases she adds
+    // Check for common small business phrases they add
     const candidatePhrases = [
       'handmade with love', 'made with love', 'link in bio', 'dm to order',
       'custom orders welcome', 'limited edition', 'one of a kind',
-      'shop small', 'support small', 'front door',
-      'door decor', 'wreath of the day', 'new in shop',
+      'shop small', 'support small', 'new in shop',
+      'just dropped', 'back in stock',
     ];
 
     for (const phrase of candidatePhrases) {
@@ -222,7 +222,7 @@ export function getVoiceInstruction(): string {
   switch (profile.length) {
     case 'short': parts.push('- Keep captions SHORT (under 80 characters). Punchy and direct.'); break;
     case 'medium': parts.push('- Medium-length captions (2-3 sentences). Engaging but not too long.'); break;
-    case 'long': parts.push('- Longer, storytelling captions (3-5 sentences). Share the story behind the wreath.'); break;
+    case 'long': parts.push('- Longer, storytelling captions (3-5 sentences). Share the story behind the product.'); break;
   }
 
   // Emoji

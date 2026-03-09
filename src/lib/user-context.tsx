@@ -2,13 +2,17 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { getGeminiApiKey, setGeminiApiKey, removeGeminiApiKey } from './gemini';
+import { runMigrations } from './migrations';
 
-const PREFS_KEY = 'wreath-social-user-prefs';
+const PREFS_KEY = 'biz-social-user-prefs';
 
 interface UserPreferences {
   displayName: string;
   setupComplete: boolean;
   createdAt: string;
+  businessType?: string;
+  businessName?: string;
+  businessDescription?: string;
 }
 
 interface UserContextValue {
@@ -16,6 +20,9 @@ interface UserContextValue {
   isSetup: boolean;
   geminiApiKey: string | null;
   createdAt: string;
+  businessType: string;
+  businessName: string;
+  businessDescription: string;
   updatePreferences: (prefs: Partial<UserPreferences & { geminiApiKey: string }>) => void;
   clearPreferences: () => void;
 }
@@ -24,13 +31,13 @@ const UserContext = createContext<UserContextValue | null>(null);
 
 function loadPrefs(): UserPreferences {
   if (typeof window === 'undefined') {
-    return { displayName: 'there', setupComplete: false, createdAt: new Date().toISOString() };
+    return { displayName: '', setupComplete: false, createdAt: new Date().toISOString() };
   }
   try {
     const stored = localStorage.getItem(PREFS_KEY);
     if (stored) return JSON.parse(stored);
   } catch {}
-  return { displayName: 'there', setupComplete: false, createdAt: new Date().toISOString() };
+  return { displayName: '', setupComplete: false, createdAt: new Date().toISOString() };
 }
 
 function savePrefs(prefs: UserPreferences): void {
@@ -43,6 +50,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    runMigrations();
     setPrefs(loadPrefs());
     setApiKey(getGeminiApiKey());
     setMounted(true);
@@ -65,7 +73,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const clearPreferences = useCallback(() => {
     localStorage.removeItem(PREFS_KEY);
     removeGeminiApiKey();
-    const fresh = { displayName: 'there', setupComplete: false, createdAt: new Date().toISOString() };
+    const fresh: UserPreferences = { displayName: '', setupComplete: false, createdAt: new Date().toISOString() };
     setPrefs(fresh);
     setApiKey(null);
   }, []);
@@ -74,10 +82,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
   if (!mounted) {
     return (
       <UserContext.Provider value={{
-        displayName: 'there',
+        displayName: '',
         isSetup: false,
         geminiApiKey: null,
         createdAt: new Date().toISOString(),
+        businessType: '',
+        businessName: '',
+        businessDescription: '',
         updatePreferences,
         clearPreferences,
       }}>
@@ -92,6 +103,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       isSetup: prefs.setupComplete,
       geminiApiKey: apiKey,
       createdAt: prefs.createdAt,
+      businessType: prefs.businessType || '',
+      businessName: prefs.businessName || '',
+      businessDescription: prefs.businessDescription || '',
       updatePreferences,
       clearPreferences,
     }}>

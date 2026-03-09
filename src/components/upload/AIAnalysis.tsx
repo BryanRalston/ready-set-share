@@ -54,7 +54,7 @@ function LoadingState() {
           </div>
         </div>
         <div>
-          <p className="font-semibold text-brown">Analyzing your wreath...</p>
+          <p className="font-semibold text-brown">Analyzing your photo...</p>
           <p className="text-sm text-brown-light mt-1">AI is crafting the perfect post</p>
         </div>
       </div>

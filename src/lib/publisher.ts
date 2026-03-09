@@ -6,6 +6,7 @@ export interface PostDraft {
   hashtags: string[];
   imageBase64?: string;
   imageUrl?: string;
+  libraryPhotoId?: string;
   platforms: string[];
   scheduledFor?: string;
   createdAt: string;
@@ -18,7 +19,7 @@ export interface PublishResult {
   error?: string;
 }
 
-const DRAFTS_KEY = 'wreath-social-drafts';
+const DRAFTS_KEY = 'biz-social-drafts';
 
 // Build the full post text from caption + hashtags
 function buildPostText(caption: string, hashtags: string[]): string {

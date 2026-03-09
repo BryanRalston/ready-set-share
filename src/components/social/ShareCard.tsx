@@ -25,25 +25,25 @@ export default function ShareCard() {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 1200, 630);
 
-      // Wreath emojis cluster
+      // App icon
       ctx.font = '80px serif';
       ctx.textAlign = 'center';
-      ctx.fillText('🌿🌸🌿', 600, 200);
+      ctx.fillText('📱✨📱', 600, 200);
 
       // Title
       ctx.fillStyle = '#FFFCF7';
       ctx.font = 'bold 56px serif';
-      ctx.fillText('Wreath Social', 600, 320);
+      ctx.fillText('PostCraft', 600, 320);
 
       // Subtitle
       ctx.font = '28px sans-serif';
       ctx.fillStyle = '#FFFCF7DD';
-      ctx.fillText('AI-powered social media for your wreath business', 600, 380);
+      ctx.fillText('AI-powered content management for small businesses', 600, 380);
 
       // URL
       ctx.font = '22px sans-serif';
       ctx.fillStyle = '#FFFCF770';
-      ctx.fillText('wreathsocial.app', 600, 560);
+      ctx.fillText('postcraft.app', 600, 560);
 
       canvas.toBlob((blob) => resolve(blob), 'image/png');
     });
@@ -58,11 +58,11 @@ export default function ShareCard() {
       try {
         const blob = await generateShareImage();
         if (blob) {
-          const file = new File([blob], 'wreath-social.png', { type: 'image/png' });
+          const file = new File([blob], 'postcraft-share.png', { type: 'image/png' });
           if (navigator.canShare?.({ files: [file] })) {
             await navigator.share({
-              title: 'Wreath Social',
-              text: 'AI-powered social media for your wreath business',
+              title: 'PostCraft',
+              text: 'AI-powered content management for small businesses',
               url,
               files: [file],
             });
@@ -70,8 +70,8 @@ export default function ShareCard() {
           }
         }
         await navigator.share({
-          title: 'Wreath Social',
-          text: 'AI-powered social media for your wreath business',
+          title: 'PostCraft',
+          text: 'AI-powered content management for small businesses',
           url,
         });
       } catch {
@@ -95,10 +95,10 @@ export default function ShareCard() {
           >
             <Card>
               <div className="text-center py-2">
-                <div className="text-3xl mb-2">🌿🌸🌿</div>
-                <h3 className="text-sm font-semibold text-brown mb-1">Share Wreath Social</h3>
+                <div className="text-3xl mb-2">📱✨</div>
+                <h3 className="text-sm font-semibold text-brown mb-1">Share PostCraft</h3>
                 <p className="text-[10px] text-brown-light mb-3">
-                  Know someone with a wreath business? Share the love!
+                  Know a small business owner? Share the love!
                 </p>
                 <Button
                   variant="primary"
@@ -122,12 +122,12 @@ export default function ShareCard() {
             <Card className="overflow-hidden">
               {/* OG preview mockup */}
               <div className="bg-gradient-to-r from-sage-500 to-sage-300 rounded-xl p-4 text-center">
-                <div className="text-3xl mb-2">🌿🌸🌿</div>
+                <div className="text-3xl mb-2">📱✨</div>
                 <h3 className="text-white font-bold text-lg font-[family-name:var(--font-heading)]">
-                  Wreath Social
+                  PostCraft
                 </h3>
                 <p className="text-sage-100 text-[10px] mt-1">
-                  AI-powered social media for your wreath business
+                  AI-powered content management for small businesses
                 </p>
               </div>
               <div className="mt-3 text-center">

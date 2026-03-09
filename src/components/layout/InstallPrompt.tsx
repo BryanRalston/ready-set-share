@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoPhonePortraitOutline, IoShareOutline, IoAddOutline, IoCloseOutline } from 'react-icons/io5';
 
-const INSTALL_DISMISSED_KEY = 'wreath-social-install-dismissed';
+const INSTALL_DISMISSED_KEY = 'biz-social-install-dismissed';
 
 export default function InstallPrompt() {
   const [show, setShow] = useState(false);
@@ -113,7 +113,7 @@ export default function InstallPrompt() {
                   transition={{ delay: 0.4 }}
                   className="text-sm text-brown-light mt-1"
                 >
-                  Add Wreath Social to your home screen
+                  Add PostCraft to your home screen
                 </motion.p>
               </div>
 
@@ -154,7 +154,7 @@ export default function InstallPrompt() {
                       step={2}
                       delay={0.6}
                       icon={<IoPhonePortraitOutline className="w-5 h-5" />}
-                      text="Find Wreath Social on your home screen"
+                      text="Find PostCraft on your home screen"
                     />
                   </>
                 )}

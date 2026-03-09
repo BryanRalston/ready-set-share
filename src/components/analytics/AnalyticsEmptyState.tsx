@@ -58,7 +58,7 @@ export default function AnalyticsEmptyState() {
           transition={{ delay: 0.7 }}
           className="text-sm text-brown-light mb-5 max-w-[260px] mx-auto"
         >
-          Post your first wreath and watch your analytics come to life
+          Create your first post and watch your analytics come to life
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 10 }}

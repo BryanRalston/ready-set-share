@@ -23,10 +23,10 @@ export interface WeekRecommendation {
   topSlot: TimeSlot | null;
 }
 
-const STORAGE_KEY = 'wreath_post_history';
+const STORAGE_KEY = 'biz-social-post-history';
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-// Industry best practices for craft/wreath businesses
+// Industry best practices for craft/small businesses
 const INDUSTRY_SCORES: Record<string, number> = {
   // Tue-Thu 10am-2pm (Instagram peak)
   '2-10': 0.9, '2-11': 1.0, '2-12': 0.95, '2-13': 0.85,

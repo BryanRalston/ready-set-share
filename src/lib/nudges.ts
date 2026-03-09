@@ -11,9 +11,9 @@ export interface Nudge {
   icon: string;
 }
 
-const HISTORY_KEY = 'wreath_post_timestamps';
-const DISMISSED_KEY = 'wreath_nudge_dismissed';
-const LAST_NUDGE_KEY = 'wreath_last_nudge_shown';
+const HISTORY_KEY = 'biz-social-post-timestamps';
+const DISMISSED_KEY = 'biz-social-nudge-dismissed';
+const LAST_NUDGE_KEY = 'biz-social-nudge-last-shown';
 
 export function recordPostTimestamp(): void {
   if (typeof window === 'undefined') return;
@@ -132,7 +132,7 @@ export function getCurrentNudge(): Nudge | null {
       id: `inactive-${daysSince}`,
       message: daysSince >= 7
         ? `It's been ${daysSince} days since your last post. Your followers miss you! Let's get back at it.`
-        : `You haven't posted in ${daysSince} days. A quick wreath photo keeps your audience engaged!`,
+        : `You haven't posted in ${daysSince} days. A quick product photo keeps your audience engaged!`,
       type: 'reminder',
       action: 'upload',
       icon: 'clock',
@@ -146,9 +146,9 @@ export function getCurrentNudge(): Nudge | null {
     candidates.push({
       id: `event-${nearest.name}`,
       message: nearest.daysUntil <= 3
-        ? `${nearest.name} is in ${nearest.daysUntil} days! Post your themed wreaths NOW for maximum impact.`
+        ? `${nearest.name} is in ${nearest.daysUntil} days! Post your themed content NOW for maximum impact.`
         : nearest.daysUntil <= 7
-        ? `${nearest.name} is in ${nearest.daysUntil} days — time to showcase your themed designs!`
+        ? `${nearest.name} is in ${nearest.daysUntil} days — time to showcase your themed products!`
         : `${nearest.name} is coming up in ${nearest.daysUntil} days. Start planning your posts!`,
       type: 'seasonal',
       action: 'upload',
@@ -168,7 +168,7 @@ export function getCurrentNudge(): Nudge | null {
   if (daysSince === null) {
     candidates.push({
       id: 'first-post',
-      message: 'Upload your first wreath photo and let AI craft the perfect caption for you!',
+      message: 'Upload your first product photo and let AI craft the perfect caption for you!',
       type: 'tip',
       action: 'upload',
       icon: 'bulb',
@@ -178,8 +178,8 @@ export function getCurrentNudge(): Nudge | null {
   // Tip nudges
   const tips = [
     { id: 'tip-carousel', message: 'Try posting a carousel next! Multi-image posts get 1.4x more reach than single photos.', icon: 'bulb' },
-    { id: 'tip-bts', message: 'Behind-the-scenes wreath-making videos get 2x more saves than finished product photos.', icon: 'bulb' },
-    { id: 'tip-natural-light', message: 'Natural lighting is your best friend. Try shooting your next wreath near a window!', icon: 'bulb' },
+    { id: 'tip-bts', message: 'Behind-the-scenes content gets 2x more saves than finished product photos.', icon: 'bulb' },
+    { id: 'tip-natural-light', message: 'Natural lighting is your best friend. Try shooting your next product near a window!', icon: 'bulb' },
   ];
   const randomTip = tips[Math.floor(Math.random() * tips.length)];
   candidates.push({

@@ -14,7 +14,7 @@ export interface ConnectedAccount {
   boardId?: string;       // Pinterest default board
 }
 
-const STORAGE_KEY = 'wreath-social-connected-accounts';
+const STORAGE_KEY = 'biz-social-connected-accounts';
 
 export function getConnectedAccounts(): ConnectedAccount[] {
   if (typeof window === 'undefined') return [];

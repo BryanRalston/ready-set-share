@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import PostMockup from './PostMockup';
-import { IoCalendarOutline, IoAddOutline, IoCloseOutline } from 'react-icons/io5';
+import { IoCalendarOutline, IoAddOutline, IoCloseOutline, IoNotificationsOutline } from 'react-icons/io5';
+import { addReminder, requestNotificationPermission } from '@/lib/reminders';
 
 interface PostEditorProps {
   initialCaption?: string;
@@ -79,6 +80,23 @@ export default function PostEditor({
   const handleScheduleChange = (type: 'now' | 'scheduled') => {
     setScheduleType(type);
     onScheduleChange?.({ type, date: scheduleDate, time: scheduleTime });
+
+    // Request notification permission when user selects "Remind Me"
+    if (type === 'scheduled') {
+      requestNotificationPermission();
+    }
+  };
+
+  const saveReminder = (date: string, time: string) => {
+    if (!date || !time) return;
+    const dateTime = new Date(`${date}T${time}`).toISOString();
+    const preview = caption || 'Untitled post';
+    addReminder({
+      postId: `post-${Date.now()}`,
+      dateTime,
+      caption: preview,
+      platforms,
+    });
   };
 
   const charCount = caption.length;
@@ -239,8 +257,8 @@ export default function PostEditor({
                   : 'bg-cream-100 text-brown-light border border-cream-200'
               }`}
             >
-              <IoCalendarOutline className="w-4 h-4" />
-              Schedule
+              <IoNotificationsOutline className="w-4 h-4" />
+              Remind Me
             </button>
           </div>
           <AnimatePresence>
@@ -260,6 +278,7 @@ export default function PostEditor({
                     onChange={(e) => {
                       setScheduleDate(e.target.value);
                       onScheduleChange?.({ type: 'scheduled', date: e.target.value, time: scheduleTime });
+                      saveReminder(e.target.value, scheduleTime);
                     }}
                     className="rounded-lg border border-cream-200 bg-cream-50 px-3 py-2 text-xs text-brown focus:outline-none focus:ring-2 focus:ring-sage-300"
                   />
@@ -269,10 +288,14 @@ export default function PostEditor({
                     onChange={(e) => {
                       setScheduleTime(e.target.value);
                       onScheduleChange?.({ type: 'scheduled', date: scheduleDate, time: e.target.value });
+                      saveReminder(scheduleDate, e.target.value);
                     }}
                     className="rounded-lg border border-cream-200 bg-cream-50 px-3 py-2 text-xs text-brown focus:outline-none focus:ring-2 focus:ring-sage-300"
                   />
                 </div>
+                <p className="text-[10px] text-brown-light mt-1.5">
+                  We&apos;ll remind you when it&apos;s time to post
+                </p>
               </motion.div>
             )}
           </AnimatePresence>

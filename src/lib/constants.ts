@@ -6,5 +6,5 @@ export const COLORS = {
   brown: '#6B4F3A',
 } as const;
 
-export const APP_NAME = 'Wreath Social';
-export const APP_DESCRIPTION = 'Your AI-powered social media assistant';
+export const APP_NAME = 'PostCraft';
+export const APP_DESCRIPTION = 'Your AI-powered social media assistant for small business';

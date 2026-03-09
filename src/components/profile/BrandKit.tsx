@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IoColorPaletteOutline, IoSparkles, IoRefreshOutline } from 'react-icons/io5';
 import Card from '@/components/ui/Card';
 import { extractColors, suggestVibe, type ExtractedColor } from '@/lib/color-extract';
+import { useUser } from '@/lib/user-context';
+import { getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
 
-const PHOTO_COUNT_KEY = 'wreath-social-photo-count';
-const BRAND_COLORS_KEY = 'wreath-social-brand-colors';
-const BRAND_VIBE_KEY = 'wreath-social-brand-vibe';
+const PHOTO_COUNT_KEY = 'biz-social-photo-count';
+const BRAND_COLORS_KEY = 'biz-social-brand-colors';
+const BRAND_VIBE_KEY = 'biz-social-brand-vibe';
 
 interface BrandKitProps {
   /** Optional image URLs to analyze. If empty, pulls from localStorage cache. */
@@ -16,6 +18,7 @@ interface BrandKitProps {
 }
 
 export default function BrandKit({ imageUrls = [] }: BrandKitProps) {
+  const { businessType } = useUser();
   const [photoCount, setPhotoCount] = useState(0);
   const [colors, setColors] = useState<ExtractedColor[]>([]);
   const [vibe, setVibe] = useState('');
@@ -191,7 +194,7 @@ export default function BrandKit({ imageUrls = [] }: BrandKitProps) {
               >
                 <p className="text-xs text-brown-light mb-1">Sample caption in your voice</p>
                 <p className="text-sm text-brown leading-relaxed italic">
-                  &ldquo;Another day, another wreath! This one turned out so pretty with those {vibe.toLowerCase().includes('warm') ? 'warm autumn tones' : vibe.toLowerCase().includes('natural') ? 'natural greenery' : 'beautiful details'}. Would love to make one for your door too!&rdquo;
+                  &ldquo;{getSampleCaption(businessType, vibe)}&rdquo;
                 </p>
               </motion.div>
             </motion.div>
@@ -200,6 +203,33 @@ export default function BrandKit({ imageUrls = [] }: BrandKitProps) {
       )}
     </Card>
   );
+}
+
+/**
+ * Generate a sample caption based on business type and vibe.
+ */
+function getSampleCaption(businessType: string, vibe: string): string {
+  const vibeDetail = vibe.toLowerCase().includes('warm')
+    ? 'warm tones'
+    : vibe.toLowerCase().includes('natural')
+    ? 'natural touches'
+    : 'beautiful details';
+
+  const captions: Record<string, string> = {
+    wreaths: `Handcrafted with love, this one turned out so pretty with those ${vibeDetail} ✨`,
+    candles: `Hand-poured with love, each candle tells a story ✨ Those ${vibeDetail} really shine through.`,
+    jewelry: `Every piece is one of a kind, designed with ${vibeDetail} in mind ✨`,
+    pottery: `Shaped by hand, finished with heart. Love how the ${vibeDetail} came together ✨`,
+    'baked-goods': `Fresh out of the oven and made with love! Those ${vibeDetail} make all the difference ✨`,
+    soap: `Natural ingredients, handmade with care. The ${vibeDetail} are everything ✨`,
+    art: `Every piece starts with inspiration. Love how these ${vibeDetail} came to life ✨`,
+    clothing: `Designed to stand out. Those ${vibeDetail} make this piece special ✨`,
+    woodwork: `Handcrafted from start to finish. The ${vibeDetail} really bring this one together ✨`,
+    flowers: `Arranged with care, blooming with personality. Love these ${vibeDetail} ✨`,
+    crafts: `Handmade with love, every piece is unique. Those ${vibeDetail} are everything ✨`,
+  };
+
+  return captions[businessType] || `Handmade with love, every piece is unique. Those ${vibeDetail} are everything ✨`;
 }
 
 /**

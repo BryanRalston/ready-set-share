@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { useUser } from '@/lib/user-context';
 import AppShell from '@/components/layout/AppShell';
 import Card from '@/components/ui/Card';
@@ -20,6 +21,9 @@ import {
   IoEyeOutline,
   IoEyeOffOutline,
   IoCheckmarkCircle,
+  IoStorefrontOutline,
+  IoCreateOutline,
+  IoStatsChartOutline,
 } from 'react-icons/io5';
 import { formatDate } from '@/lib/utils';
 import { getPostCount } from '@/lib/posting-analytics';
@@ -29,8 +33,9 @@ import VoiceProfileCard from '@/components/profile/VoiceProfile';
 import LandingPagePreview from '@/components/profile/LandingPagePreview';
 import QRGenerator from '@/components/profile/QRGenerator';
 import ShareCard from '@/components/social/ShareCard';
+import { BUSINESS_TYPES, getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
 
-const DARK_MODE_KEY = 'wreath-social-dark-mode';
+const DARK_MODE_KEY = 'biz-social-dark-mode';
 
 const stagger = {
   hidden: {},
@@ -45,7 +50,7 @@ const fadeUp = {
 };
 
 export default function ProfilePage() {
-  const { displayName, geminiApiKey, updatePreferences, clearPreferences, createdAt } = useUser();
+  const { displayName, geminiApiKey, updatePreferences, clearPreferences, createdAt, businessType, businessName, businessDescription } = useUser();
   const [darkMode, setDarkMode] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(displayName);
@@ -55,6 +60,13 @@ export default function ProfilePage() {
   const [postCount, setPostCount] = useState(0);
   const [streak, setStreak] = useState(0);
   const [draftCount, setDraftCount] = useState(0);
+
+  // Business info editing state
+  const [editingBusinessName, setEditingBusinessName] = useState(false);
+  const [businessNameInput, setBusinessNameInput] = useState(businessName);
+  const [editingBusinessDesc, setEditingBusinessDesc] = useState(false);
+  const [businessDescInput, setBusinessDescInput] = useState(businessDescription);
+  const [editingBusinessType, setEditingBusinessType] = useState(false);
 
   // Load real stats
   useEffect(() => {
@@ -72,6 +84,15 @@ export default function ProfilePage() {
   useEffect(() => {
     setApiKeyInput(geminiApiKey || '');
   }, [geminiApiKey]);
+
+  // Sync business fields
+  useEffect(() => {
+    setBusinessNameInput(businessName);
+  }, [businessName]);
+
+  useEffect(() => {
+    setBusinessDescInput(businessDescription);
+  }, [businessDescription]);
 
   // Load dark mode preference on mount
   useEffect(() => {
@@ -96,6 +117,23 @@ export default function ProfilePage() {
       updatePreferences({ displayName: nameInput.trim() });
     }
     setEditingName(false);
+  };
+
+  const handleSaveBusinessName = () => {
+    if (businessNameInput.trim()) {
+      updatePreferences({ businessName: businessNameInput.trim(), displayName: businessNameInput.trim() });
+    }
+    setEditingBusinessName(false);
+  };
+
+  const handleSaveBusinessDesc = () => {
+    updatePreferences({ businessDescription: businessDescInput.trim() });
+    setEditingBusinessDesc(false);
+  };
+
+  const handleSelectBusinessType = (type: string) => {
+    updatePreferences({ businessType: type });
+    setEditingBusinessType(false);
   };
 
   const handleSaveApiKey = () => {
@@ -140,23 +178,142 @@ export default function ProfilePage() {
           </h2>
         </motion.div>
 
+        {/* Business Info */}
+        <motion.div variants={fadeUp}>
+          <Card>
+            <div className="flex items-center gap-2 mb-3">
+              <IoStorefrontOutline className="w-4 h-4 text-sage-500" />
+              <h3 className="font-semibold text-brown text-sm">Business Info</h3>
+            </div>
+            <div className="space-y-3">
+              {/* Business Type */}
+              <div>
+                <span className="text-xs text-brown-light mb-1 block">Business Type</span>
+                {editingBusinessType ? (
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {BUSINESS_TYPES.map((bt) => (
+                      <button
+                        key={bt.key}
+                        onClick={() => handleSelectBusinessType(bt.key)}
+                        className={`text-xs px-2 py-1.5 rounded-lg border transition-colors text-left ${
+                          businessType === bt.key
+                            ? 'bg-sage-50 border-sage-300 text-brown font-medium'
+                            : 'bg-cream-50 border-cream-200 text-brown-light hover:bg-cream-100'
+                        }`}
+                      >
+                        {bt.emoji} {bt.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditingBusinessType(true)}
+                    className="w-full flex items-center justify-between text-sm px-3 py-2 rounded-xl bg-cream-50 text-brown hover:bg-cream-100 transition-colors"
+                  >
+                    <span>
+                      {businessType
+                        ? `${getBusinessTypeInfo(businessType as BusinessType).emoji} ${getBusinessTypeInfo(businessType as BusinessType).label}`
+                        : 'Select a business type'}
+                    </span>
+                    <IoCreateOutline className="w-3.5 h-3.5 text-brown-light" />
+                  </button>
+                )}
+              </div>
+
+              {/* Business Name */}
+              <div>
+                <span className="text-xs text-brown-light mb-1 block">Business Name</span>
+                {editingBusinessName ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={businessNameInput}
+                      onChange={(e) => setBusinessNameInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveBusinessName()}
+                      placeholder="Your business name"
+                      className="flex-1 text-sm px-3 py-2 rounded-xl border border-cream-200 bg-cream-50 text-brown focus:outline-none focus:ring-2 focus:ring-sage-300"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleSaveBusinessName}
+                      className="text-xs font-medium text-white bg-sage-500 hover:bg-sage-600 px-3 py-2 rounded-xl transition-colors"
+                    >
+                      Save
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditingBusinessName(true)}
+                    className="w-full flex items-center justify-between text-sm px-3 py-2 rounded-xl bg-cream-50 text-brown hover:bg-cream-100 transition-colors"
+                  >
+                    <span>{businessName || 'Tap to set business name'}</span>
+                    <IoCreateOutline className="w-3.5 h-3.5 text-brown-light" />
+                  </button>
+                )}
+              </div>
+
+              {/* Business Description */}
+              <div>
+                <span className="text-xs text-brown-light mb-1 block">Description</span>
+                {editingBusinessDesc ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={businessDescInput}
+                      onChange={(e) => setBusinessDescInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveBusinessDesc()}
+                      placeholder="What does your business do?"
+                      className="flex-1 text-sm px-3 py-2 rounded-xl border border-cream-200 bg-cream-50 text-brown focus:outline-none focus:ring-2 focus:ring-sage-300"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleSaveBusinessDesc}
+                      className="text-xs font-medium text-white bg-sage-500 hover:bg-sage-600 px-3 py-2 rounded-xl transition-colors"
+                    >
+                      Save
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditingBusinessDesc(true)}
+                    className="w-full flex items-center justify-between text-sm px-3 py-2 rounded-xl bg-cream-50 text-brown hover:bg-cream-100 transition-colors"
+                  >
+                    <span className={businessDescription ? '' : 'text-brown-light'}>
+                      {businessDescription || 'Tap to add a description'}
+                    </span>
+                    <IoCreateOutline className="w-3.5 h-3.5 text-brown-light" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
         {/* Stats */}
-        <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
-          <Card padding="sm" className="text-center" animate={false}>
-            <IoImageOutline className="w-5 h-5 text-sage-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">{postCount}</p>
-            <p className="text-[10px] text-brown-light">Total Posts</p>
-          </Card>
-          <Card padding="sm" className="text-center" animate={false}>
-            <IoFlameOutline className="w-5 h-5 text-gold-300 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">{streak}</p>
-            <p className="text-[10px] text-brown-light">Day Streak</p>
-          </Card>
-          <Card padding="sm" className="text-center" animate={false}>
-            <IoCalendarOutline className="w-5 h-5 text-sage-400 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">{draftCount}</p>
-            <p className="text-[10px] text-brown-light">Drafts</p>
-          </Card>
+        <motion.div variants={fadeUp}>
+          <div className="grid grid-cols-3 gap-3">
+            <Card padding="sm" className="text-center" animate={false}>
+              <IoImageOutline className="w-5 h-5 text-sage-500 mx-auto mb-1" />
+              <p className="text-lg font-bold text-brown">{postCount}</p>
+              <p className="text-[10px] text-brown-light">Total Posts</p>
+            </Card>
+            <Card padding="sm" className="text-center" animate={false}>
+              <IoFlameOutline className="w-5 h-5 text-gold-300 mx-auto mb-1" />
+              <p className="text-lg font-bold text-brown">{streak}</p>
+              <p className="text-[10px] text-brown-light">Day Streak</p>
+            </Card>
+            <Card padding="sm" className="text-center" animate={false}>
+              <IoCalendarOutline className="w-5 h-5 text-sage-400 mx-auto mb-1" />
+              <p className="text-lg font-bold text-brown">{draftCount}</p>
+              <p className="text-[10px] text-brown-light">Drafts</p>
+            </Card>
+          </div>
+          <Link href="/analytics" className="block mt-3">
+            <Button variant="secondary" size="sm" className="w-full gap-1.5">
+              <IoStatsChartOutline className="w-3.5 h-3.5" />
+              View Analytics
+            </Button>
+          </Link>
         </motion.div>
 
         {/* Settings — Display Name & API Key */}

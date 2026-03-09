@@ -61,7 +61,7 @@ export default function BestTimes() {
               <span className="text-[10px] text-brown-light">
                 {recommendation.hasPersonalData
                   ? `Based on your ${recommendation.postCount} posts`
-                  : 'Based on wreath businesses like yours'}
+                  : 'Based on small businesses like yours'}
               </span>
             </div>
           </div>

@@ -85,7 +85,7 @@ export default function QRGenerator() {
     if (!qrDataUrl) return;
     const a = document.createElement('a');
     a.href = qrDataUrl;
-    a.download = `wreath-qr-${selectedLink}.png`;
+    a.download = `postcraft-qr-${selectedLink}.png`;
     a.click();
   };
 
@@ -156,14 +156,14 @@ export default function QRGenerator() {
                 alt="QR Code"
                 className={printSize === 'small' ? 'w-36 h-36' : 'w-52 h-52'}
               />
-              {/* Center wreath icon */}
+              {/* Center icon */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-8 h-8 bg-cream-50 rounded-full flex items-center justify-center">
                   <span className="text-lg">🌿</span>
                 </div>
               </div>
             </div>
-            <p className="text-[10px] text-brown-light mt-2">Scan to see my wreaths!</p>
+            <p className="text-[10px] text-brown-light mt-2">Scan to see my shop!</p>
           </motion.div>
         )}
       </AnimatePresence>

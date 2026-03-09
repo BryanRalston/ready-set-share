@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IoMicOutline, IoStopOutline, IoSparkles } from 'react-icons/io5';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { polishCaption } from '@/lib/gemini';
+import { polishCaption, type BusinessContext } from '@/lib/gemini';
+import { useUser } from '@/lib/user-context';
 
 // Web Speech API types (not available in all TS configs)
 interface SpeechRecognitionEvent extends Event {
@@ -69,6 +70,7 @@ function WaveformBar({ index, active }: { index: number; active: boolean }) {
 }
 
 export default function VoiceCaption({ onCaptionGenerated }: VoiceCaptionProps) {
+  const { businessType, businessName, businessDescription } = useUser();
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isPolishing, setIsPolishing] = useState(false);
@@ -133,8 +135,9 @@ export default function VoiceCaption({ onCaptionGenerated }: VoiceCaptionProps) 
 
     // Polish with Gemini
     setIsPolishing(true);
+    const bizContext: BusinessContext = { type: businessType, name: businessName, description: businessDescription };
     try {
-      const data = await polishCaption(transcript.trim());
+      const data = await polishCaption(transcript.trim(), bizContext);
       setPolishedCaption(data.caption);
     } catch {
       setPolishedCaption(transcript.trim());

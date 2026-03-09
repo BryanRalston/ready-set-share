@@ -12,15 +12,19 @@ import {
   IoAddOutline,
   IoCalendarOutline,
   IoImageOutline,
+  IoCameraOutline,
 } from 'react-icons/io5';
 import Link from 'next/link';
 import NudgeCard from '@/components/home/NudgeCard';
-import SeasonalTip from '@/components/home/SeasonalTip';
+import ContentIdea from '@/components/home/ContentIdea';
+import UpcomingReminders from '@/components/home/UpcomingReminders';
 import StreakTracker from '@/components/home/StreakTracker';
 import DraftsList from '@/components/home/DraftsList';
 import { getDrafts, type PostDraft } from '@/lib/publisher';
 import { getCurrentStreak } from '@/lib/streak';
 import { getPostCount } from '@/lib/posting-analytics';
+import { checkAndFireReminders, getUpcomingReminders, type Reminder } from '@/lib/reminders';
+import { getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -30,13 +34,17 @@ function getGreeting(): string {
 }
 
 export default function HomePage() {
-  const { displayName } = useUser();
+  const { displayName, businessName, businessType } = useUser();
   const greeting = useMemo(() => getGreeting(), []);
+  const fallbackEmoji = businessType
+    ? getBusinessTypeInfo(businessType as BusinessType).emoji
+    : '📦';
 
   const [drafts, setDrafts] = useState<PostDraft[]>([]);
   const [postCount, setPostCount] = useState(0);
   const [streak, setStreak] = useState(0);
   const [scheduledCount, setScheduledCount] = useState(0);
+  const [upcomingReminders, setUpcomingReminders] = useState<Reminder[]>([]);
 
   useEffect(() => {
     const allDrafts = getDrafts();
@@ -44,6 +52,9 @@ export default function HomePage() {
     setPostCount(getPostCount());
     setStreak(getCurrentStreak());
     setScheduledCount(allDrafts.filter(d => d.scheduledFor).length);
+    setUpcomingReminders(getUpcomingReminders(3));
+    // Fire any overdue notifications on mount
+    checkAndFireReminders();
   }, []);
 
   const hasPosts = drafts.length > 0;
@@ -63,7 +74,11 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)]">
             {greeting}, {displayName}!
           </h2>
-          <p className="text-brown-light text-sm mt-1">Let&apos;s grow your wreath business today.</p>
+          <p className="text-brown-light text-sm mt-1">
+            {businessName
+              ? `Let\u2019s grow ${businessName} today.`
+              : 'Let\u2019s make something great today.'}
+          </p>
         </motion.div>
 
         {/* Quick stats row */}
@@ -93,8 +108,11 @@ export default function HomePage() {
         {/* Streak tracker */}
         <StreakTracker />
 
-        {/* Seasonal tip */}
-        <SeasonalTip />
+        {/* Content idea */}
+        <ContentIdea />
+
+        {/* Upcoming reminders */}
+        <UpcomingReminders reminders={upcomingReminders} />
 
         {/* Content area */}
         {!hasPosts ? (
@@ -104,35 +122,18 @@ export default function HomePage() {
             transition={{ delay: 0.3 }}
           >
             <Card padding="lg" className="text-center">
-              {/* Wreath composition */}
-              <div className="w-24 h-24 mx-auto mb-4 relative">
-                <motion.span
-                  className="absolute text-4xl"
-                  style={{ top: 0, left: '50%', transform: 'translateX(-50%)' }}
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0 }}
+              {/* Empty state icon */}
+              <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <motion.div
+                  animate={{ y: [0, -6, 0], scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                  className="w-16 h-16 rounded-full bg-sage-100 flex items-center justify-center"
                 >
-                  🌿
-                </motion.span>
-                <motion.span
-                  className="absolute text-2xl"
-                  style={{ bottom: 4, left: 4 }}
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
-                >
-                  🌸
-                </motion.span>
-                <motion.span
-                  className="absolute text-2xl"
-                  style={{ bottom: 4, right: 4 }}
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
-                >
-                  🍃
-                </motion.span>
+                  <IoCameraOutline className="w-8 h-8 text-sage-500" />
+                </motion.div>
               </div>
               <h3 className="text-lg font-semibold text-brown font-[family-name:var(--font-heading)] mb-2">
-                Your wreath journey starts here
+                Your content journey starts here
               </h3>
               <p className="text-sm text-brown-light mb-5 max-w-[260px] mx-auto">
                 Upload your first photo and watch the magic happen
@@ -177,7 +178,7 @@ export default function HomePage() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={draft.imageUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span>🌿</span>
+                        <span>{fallbackEmoji}</span>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">

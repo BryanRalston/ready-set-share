@@ -186,7 +186,7 @@ export default function CalendarPage() {
                   <Link key={post.id} href={`/post/${post.id}`}>
                     <Card className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-cream-200 flex items-center justify-center text-lg">
-                        🌿
+                        📸
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-brown line-clamp-1">{post.caption}</p>
@@ -278,7 +278,7 @@ export default function CalendarPage() {
                 No posts scheduled yet
               </h3>
               <p className="text-sm text-brown-light mb-4 max-w-[260px] mx-auto">
-                Upload a wreath photo to get started!
+                Upload a photo to get started!
               </p>
               <Link href="/upload">
                 <Button size="md">Upload a Photo</Button>

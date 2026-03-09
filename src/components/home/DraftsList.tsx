@@ -13,8 +13,14 @@ import {
 import { getDrafts, deleteDraft, type PostDraft } from '@/lib/publisher';
 import { getConnectedPlatforms } from '@/lib/social-accounts';
 import { truncate } from '@/lib/utils';
+import { useUser } from '@/lib/user-context';
+import { getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
 
 export default function DraftsList() {
+  const { businessType } = useUser();
+  const fallbackEmoji = businessType
+    ? getBusinessTypeInfo(businessType as BusinessType).emoji
+    : '📦';
   const [drafts, setDrafts] = useState<PostDraft[]>([]);
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
   const [swipedId, setSwipedId] = useState<string | null>(null);
@@ -65,7 +71,7 @@ export default function DraftsList() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={draft.imageUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span>🌿</span>
+                    <span>{fallbackEmoji}</span>
                   )}
                 </div>
 

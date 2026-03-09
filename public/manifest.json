@@ -1,7 +1,7 @@
 {
-  "name": "Wreath Social",
-  "short_name": "Wreath",
-  "description": "Your AI-powered social media assistant for your wreath business",
+  "name": "PostCraft",
+  "short_name": "PostCraft",
+  "description": "Your AI-powered social media assistant for small business",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FDF6EC",

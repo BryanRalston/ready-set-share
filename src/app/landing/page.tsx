@@ -6,6 +6,8 @@ import { IoLogoInstagram, IoLogoPinterest, IoLogoFacebook, IoImageOutline } from
 import { useUser } from '@/lib/user-context';
 import { getDrafts, type PostDraft } from '@/lib/publisher';
 import { getConnectedAccounts, type ConnectedAccount } from '@/lib/social-accounts';
+import { getPhotos, type LibraryPhoto } from '@/lib/photo-library';
+import { getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
 
 function FadeInOnScroll({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
@@ -50,25 +52,50 @@ export default function LandingPage() {
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 80]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.3]);
 
-  const { displayName } = useUser();
-  const [photos, setPhotos] = useState<PostDraft[]>([]);
+  const { displayName, businessName: userBusinessName, businessDescription, businessType } = useUser();
+  const [libraryPhotos, setLibraryPhotos] = useState<LibraryPhoto[]>([]);
+  const [draftPhotos, setDraftPhotos] = useState<PostDraft[]>([]);
   const [socialAccounts, setSocialAccounts] = useState<ConnectedAccount[]>([]);
   const [mounted, setMounted] = useState(false);
 
+  const typeInfo = businessType ? getBusinessTypeInfo(businessType as BusinessType) : null;
+  const heroEmoji = typeInfo?.emoji || '🛍️';
+
   useEffect(() => {
-    // Load drafts that have images (real wreath photos)
+    // Load photos from IndexedDB library first
+    getPhotos()
+      .then((photos) => setLibraryPhotos(photos))
+      .catch(() => {
+        // IndexedDB unavailable — fall through to drafts
+      });
+
+    // Load drafts that have images as fallback
     const allDrafts = getDrafts();
     const withImages = allDrafts.filter(d => d.imageUrl || d.imageBase64);
-    setPhotos(withImages);
+    setDraftPhotos(withImages);
 
     // Load connected social accounts
     setSocialAccounts(getConnectedAccounts());
     setMounted(true);
   }, []);
 
-  const businessName = displayName && displayName !== 'there'
-    ? `${displayName}'s Wreaths`
-    : 'My Wreath Studio';
+  // Use library photos if available, otherwise fall back to draft images
+  const hasLibraryPhotos = libraryPhotos.length > 0;
+  const hasDraftPhotos = draftPhotos.length > 0;
+  const hasPhotos = hasLibraryPhotos || hasDraftPhotos;
+
+  // Determine the display name for the hero
+  const heroName = userBusinessName
+    || (displayName && displayName !== 'there' ? displayName : '')
+    || 'My Business';
+
+  // Determine the subtitle
+  const heroSubtitle = businessDescription
+    || 'Quality products crafted with care. Every piece is made with attention to detail and love for the craft.';
+
+  // About section text
+  const aboutText = businessDescription
+    || 'Quality products crafted with care. Every piece is made with attention to detail and love for the craft.';
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -78,9 +105,9 @@ export default function LandingPage() {
           style={{ y: heroY }}
           className="absolute inset-0 bg-gradient-to-br from-sage-500 via-sage-400 to-sage-300"
         >
-          {/* Decorative wreaths */}
+          {/* Decorative icon */}
           <div className="absolute inset-0 flex items-center justify-center opacity-20">
-            <span className="text-[200px]">🌿</span>
+            <span className="text-[200px]">{heroEmoji}</span>
           </div>
         </motion.div>
         <motion.div
@@ -92,7 +119,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, type: 'spring' }}
           >
-            <span className="text-6xl mb-4 block">🌿</span>
+            <span className="text-6xl mb-4 block">{heroEmoji}</span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -100,7 +127,7 @@ export default function LandingPage() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-heading)] mb-3"
           >
-            {businessName}
+            {heroName}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -108,7 +135,7 @@ export default function LandingPage() {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="text-sage-100 text-base max-w-sm"
           >
-            Handcrafted wreaths for every season, made with love and natural materials
+            {heroSubtitle}
           </motion.p>
         </motion.div>
       </div>
@@ -118,12 +145,10 @@ export default function LandingPage() {
         <FadeInOnScroll>
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-3">
-              About My Wreaths
+              About
             </h2>
             <p className="text-sm text-brown-light leading-relaxed">
-              Each wreath is a one-of-a-kind creation, thoughtfully designed and handcrafted
-              with quality materials. From seasonal door wreaths to custom centerpieces,
-              every piece is made to bring warmth and natural beauty to your space.
+              {aboutText}
             </p>
           </div>
         </FadeInOnScroll>
@@ -135,27 +160,40 @@ export default function LandingPage() {
           </h2>
         </FadeInOnScroll>
 
-        {mounted && photos.length > 0 ? (
+        {mounted && hasPhotos ? (
           <div className="grid grid-cols-3 gap-2 mb-12">
-            {photos.slice(0, 9).map((draft, i) => (
-              <FadeInOnScroll key={draft.id} delay={i * 0.05}>
-                <div className="aspect-square rounded-xl overflow-hidden border border-cream-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={draft.imageUrl || draft.imageBase64 || ''}
-                    alt={draft.caption ? draft.caption.slice(0, 60) : 'Wreath photo'}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </FadeInOnScroll>
-            ))}
+            {hasLibraryPhotos
+              ? libraryPhotos.slice(0, 9).map((photo, i) => (
+                  <FadeInOnScroll key={photo.id} delay={i * 0.05}>
+                    <div className="aspect-square rounded-xl overflow-hidden border border-cream-200">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.thumbnail || photo.base64}
+                        alt={photo.name || 'Product photo'}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </FadeInOnScroll>
+                ))
+              : draftPhotos.slice(0, 9).map((draft, i) => (
+                  <FadeInOnScroll key={draft.id} delay={i * 0.05}>
+                    <div className="aspect-square rounded-xl overflow-hidden border border-cream-200">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={draft.imageUrl || draft.imageBase64 || ''}
+                        alt={draft.caption ? draft.caption.slice(0, 60) : 'Product photo'}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </FadeInOnScroll>
+                ))}
           </div>
         ) : mounted ? (
           <FadeInOnScroll>
             <div className="flex flex-col items-center justify-center py-12 mb-12 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50/50">
               <IoImageOutline className="w-10 h-10 text-sage-300 mb-3" />
               <p className="text-sm text-brown-light text-center max-w-[240px]">
-                Upload your first wreath to build your gallery!
+                Upload your first photo to build your gallery!
               </p>
             </div>
           </FadeInOnScroll>
@@ -168,8 +206,8 @@ export default function LandingPage() {
           </div>
         )}
 
-        {/* Contact / Social Links — only show if there are connected accounts */}
-        {mounted && socialAccounts.length > 0 && (
+        {/* Contact / Social Links — only show if there are connected accounts with usernames */}
+        {mounted && socialAccounts.filter(a => a.username).length > 0 && (
           <FadeInOnScroll>
             <div className="text-center space-y-3 mb-10">
               <h2 className="text-xl font-bold text-brown font-[family-name:var(--font-heading)]">
@@ -181,11 +219,9 @@ export default function LandingPage() {
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 {socialAccounts.map((account) => {
                   const config = PLATFORM_CONFIG[account.platform];
-                  if (!config) return null;
+                  if (!config || !account.username) return null;
                   const Icon = config.icon;
-                  const href = account.username
-                    ? `${config.urlPrefix}${account.username}`
-                    : '#';
+                  const href = `${config.urlPrefix}${account.username}`;
                   return (
                     <motion.a
                       key={account.platform}
@@ -209,7 +245,7 @@ export default function LandingPage() {
         <FadeInOnScroll>
           <div className="text-center py-6 border-t border-cream-200">
             <p className="text-[10px] text-brown-light/60">
-              Made with 💚 using Wreath Social
+              Made with PostCraft
             </p>
           </div>
         </FadeInOnScroll>

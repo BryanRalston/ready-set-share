@@ -5,15 +5,20 @@ import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { IoGlobeOutline, IoShareOutline, IoOpenOutline } from 'react-icons/io5';
+import { useUser } from '@/lib/user-context';
 
 export default function LandingPagePreview() {
+  const { businessName, businessDescription } = useUser();
+  const shareTitle = businessName || 'My Business';
+  const shareText = businessDescription || 'Check out our quality products!';
+
   const handleShare = async () => {
     const url = `${window.location.origin}/landing`;
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'My Wreath Business',
-          text: 'Check out my handcrafted wreaths!',
+          title: shareTitle,
+          text: shareText,
           url,
         });
       } catch {
@@ -44,8 +49,8 @@ export default function LandingPagePreview() {
           {/* Hero */}
           <div className="h-24 bg-gradient-to-br from-sage-500 to-sage-300 flex items-center justify-center">
             <div className="text-center">
-              <span className="text-2xl block">🌿</span>
-              <span className="text-[7px] text-white font-semibold">Custom Wreaths</span>
+              <span className="text-2xl block">✨</span>
+              <span className="text-[7px] text-white font-semibold">{businessName || 'My Business'}</span>
             </div>
           </div>
           {/* Body */}
@@ -54,7 +59,7 @@ export default function LandingPagePreview() {
             <div className="h-1 bg-cream-200 rounded-full w-1/2 mx-auto" />
             {/* Mini gallery grid */}
             <div className="grid grid-cols-3 gap-0.5 mt-2">
-              {['🌿', '🌸', '🍂', '🎄', '🌻', '🌹'].map((emoji, i) => (
+              {['📸', '✨', '🎨', '💫', '🛍️', '❤️'].map((emoji, i) => (
                 <div
                   key={i}
                   className="aspect-square rounded-sm bg-sage-50 flex items-center justify-center text-[8px]"

@@ -1,6 +1,6 @@
 import { format, subDays, differenceInCalendarDays, startOfDay } from 'date-fns';
 
-const STREAK_KEY = 'wreath-social-streak-data';
+const STREAK_KEY = 'biz-social-streak-data';
 
 interface StreakData {
   postDates: string[]; // ISO date strings (YYYY-MM-DD)
@@ -119,7 +119,7 @@ const MILESTONES = [
   { days: 14, name: 'Consistent Creator', icon: '🎨' },
   { days: 30, name: 'Monthly Maven', icon: '👑' },
   { days: 60, name: 'Social Pro', icon: '💎' },
-  { days: 90, name: 'Wreath Queen', icon: '🏆' },
+  { days: 90, name: 'Legend', icon: '🏆' },
 ];
 
 export function getMilestone(streak: number): Milestone | null {

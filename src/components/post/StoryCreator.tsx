@@ -11,7 +11,7 @@ interface StoryCreatorProps {
 }
 
 const TEXT_OPTIONS = [
-  { label: 'New Wreath!', emoji: '' },
+  { label: 'New Product!', emoji: '' },
   { label: 'Just Listed', emoji: '' },
   { label: 'Custom Order? DM me!', emoji: '' },
   { label: 'Custom...', emoji: '' },
@@ -108,7 +108,7 @@ export default function StoryCreator({ imageUrl }: StoryCreatorProps) {
     if (!canvas) return;
 
     const link = document.createElement('a');
-    link.download = 'wreath-story.png';
+    link.download = 'postcraft-story.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   };

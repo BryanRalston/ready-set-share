@@ -12,9 +12,10 @@ interface PhotoUploaderProps {
   onClear?: () => void;
   uploading?: boolean;
   uploadProgress?: number;
+  onChooseFromLibrary?: () => void;
 }
 
-export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, uploading, uploadProgress = 0 }: PhotoUploaderProps) {
+export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, uploading, uploadProgress = 0, onChooseFromLibrary }: PhotoUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -48,7 +49,7 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
         <div className="relative aspect-square bg-cream-200">
           <Image
             src={previewUrl}
-            alt="Selected wreath photo"
+            alt="Selected photo"
             fill
             className="object-cover"
           />
@@ -79,6 +80,7 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
   }
 
   return (
+    <>
     <motion.label
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -115,5 +117,17 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
         className="hidden"
       />
     </motion.label>
+    {onChooseFromLibrary && (
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        onClick={onChooseFromLibrary}
+        className="block w-full text-center mt-3 text-sm text-sage-500 hover:text-sage-600 transition-colors"
+      >
+        or choose from library
+      </motion.button>
+    )}
+    </>
   );
 }

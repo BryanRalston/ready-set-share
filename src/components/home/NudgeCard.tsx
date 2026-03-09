@@ -41,7 +41,7 @@ export default function NudgeCard() {
     if (!isGeminiConfigured()) {
       setNudge({
         id: 'setup-ai-key',
-        message: 'Get personalized captions for your wreaths — it\'s free!',
+        message: 'Get personalized captions for your products — it\'s free!',
         type: 'tip',
         action: 'setup-ai' as Nudge['action'],
         icon: 'key',

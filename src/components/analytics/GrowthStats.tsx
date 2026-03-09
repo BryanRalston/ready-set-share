@@ -58,10 +58,10 @@ export default function GrowthStats() {
   const stats = getMonthStats();
 
   const items = [
-    { label: 'Total Posts', value: stats.totalPosts, icon: IoImageOutline, color: 'text-sage-500', trend: 'up' as const },
-    { label: 'This Month', value: stats.thisMonth, icon: IoCalendarOutline, color: 'text-gold-300', trend: 'up' as const },
-    { label: 'Avg / Week', value: stats.avgPerWeek, icon: IoTrendingUpOutline, color: 'text-sage-400', trend: 'up' as const },
-    { label: 'Best Day', value: stats.bestDay, icon: IoStarOutline, color: 'text-gold-400', trend: 'flat' as const },
+    { label: 'Total Posts', value: stats.totalPosts, icon: IoImageOutline, color: 'text-sage-500' },
+    { label: 'This Month', value: stats.thisMonth, icon: IoCalendarOutline, color: 'text-gold-300' },
+    { label: 'Avg / Week', value: stats.avgPerWeek, icon: IoTrendingUpOutline, color: 'text-sage-400' },
+    { label: 'Best Day', value: stats.bestDay, icon: IoStarOutline, color: 'text-gold-400' },
   ];
 
   return (
@@ -79,17 +79,7 @@ export default function GrowthStats() {
               <span className="text-[10px] text-brown-light font-medium">{stat.label}</span>
             </div>
             {typeof stat.value === 'number' ? (
-              <div className="flex items-center gap-1.5">
-                <AnimatedNumber target={stat.value} />
-                {stat.trend === 'up' && (
-                  <span className="text-[10px] text-sage-500 font-medium flex items-center">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="mr-0.5">
-                      <path d="M5 2L8 6H2L5 2Z" fill="currentColor" />
-                    </svg>
-                    12%
-                  </span>
-                )}
-              </div>
+              <AnimatedNumber target={stat.value} />
             ) : (
               <span className="text-lg font-bold text-brown font-[family-name:var(--font-heading)]">
                 {stat.value}

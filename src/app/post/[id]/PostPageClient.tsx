@@ -15,8 +15,8 @@ import { recordPost } from '@/lib/streak';
 
 // Fallback data — used only when no pending post or draft is found
 const MOCK_POST = {
-  caption: 'Beautiful handcrafted wreath, made with love! Every detail is carefully chosen to bring warmth to your home.',
-  hashtags: ['#wreath', '#handmade', '#homedecor', '#wreathmaking', '#crafts', '#doorwreath', '#seasonal', '#naturaldecor', '#homestyle', '#shopsmall'],
+  caption: 'Check out our latest creation! Made with love and care. Every detail matters when you pour your heart into your craft.',
+  hashtags: ['#handmade', '#smallbusiness', '#shopsmall', '#madewithcare', '#supportsmall', '#handcrafted', '#shoplocal', '#makersofinstagram', '#smallbiz', '#buylocal'],
   platform: 'Instagram',
   tip: 'Post between 11am-1pm for best engagement.',
   postType: 'Single Post',
@@ -27,9 +27,9 @@ function loadPostData(id: string) {
   if (id === 'new') {
     // Try loading from sessionStorage (set by the upload flow)
     try {
-      const raw = sessionStorage.getItem('wreath-social-pending-post');
+      const raw = sessionStorage.getItem('biz-social-pending-post');
       if (raw) {
-        sessionStorage.removeItem('wreath-social-pending-post');
+        sessionStorage.removeItem('biz-social-pending-post');
         const parsed = JSON.parse(raw);
         return {
           caption: parsed.caption || '',

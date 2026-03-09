@@ -8,7 +8,7 @@ import { useEffect } from 'react';
  */
 export default function DarkModeInit() {
   useEffect(() => {
-    const stored = localStorage.getItem('wreath-social-dark-mode');
+    const stored = localStorage.getItem('biz-social-dark-mode');
     if (stored === 'true') {
       document.documentElement.classList.add('dark');
     }

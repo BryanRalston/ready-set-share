@@ -50,7 +50,7 @@ const PLATFORM_COLORS: Record<string, string> = {
 function getPostTimestamps(): number[] {
   if (typeof window === 'undefined') return [];
   try {
-    const stored = localStorage.getItem('wreath_post_timestamps');
+    const stored = localStorage.getItem('biz-social-post-timestamps');
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];

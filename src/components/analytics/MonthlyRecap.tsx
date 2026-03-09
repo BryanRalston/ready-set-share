@@ -11,7 +11,9 @@ import {
   IoTrophyOutline,
   IoPricetagOutline,
   IoCalendarOutline,
+  IoRibbonOutline,
 } from 'react-icons/io5';
+import { getLongestStreak } from '@/lib/streak';
 
 const sectionVariants = {
   hidden: {},
@@ -55,7 +57,7 @@ export default function MonthlyRecap() {
     ctx.font = '36px sans-serif';
     ctx.fillText(`${recap.postsThisMonth} posts this month`, 540, 360);
     ctx.fillText(`${recap.streakRecord} day streak`, 540, 440);
-    ctx.fillText(`${recap.totalReach} total reach`, 540, 520);
+    ctx.fillText(`${getLongestStreak()} day longest streak`, 540, 520);
 
     // Best post
     ctx.font = 'italic 28px sans-serif';
@@ -80,7 +82,7 @@ export default function MonthlyRecap() {
     // Footer
     ctx.fillStyle = '#FFFCF770';
     ctx.font = '22px sans-serif';
-    ctx.fillText('Made with Wreath Social', 540, 1020);
+    ctx.fillText('Made with PostCraft', 540, 1020);
 
     // Share or download
     canvas.toBlob(async (blob) => {
@@ -90,7 +92,7 @@ export default function MonthlyRecap() {
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         try {
           await navigator.share({
-            title: `My ${recap.month} Wreath Recap`,
+            title: `My ${recap.month} Monthly Recap`,
             files: [file],
           });
         } catch {
@@ -159,10 +161,13 @@ export default function MonthlyRecap() {
               <p className="text-[10px] text-brown-light">Day Streak</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-brown font-[family-name:var(--font-heading)]">
-                {recap.totalReach}
-              </p>
-              <p className="text-[10px] text-brown-light">Reach</p>
+              <div className="flex items-center justify-center gap-1">
+                <IoRibbonOutline className="w-4 h-4 text-sage-400" />
+                <p className="text-xl font-bold text-brown font-[family-name:var(--font-heading)]">
+                  {getLongestStreak()}
+                </p>
+              </div>
+              <p className="text-[10px] text-brown-light">Longest Streak</p>
             </div>
           </motion.div>
 

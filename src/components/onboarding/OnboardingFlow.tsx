@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '@/components/ui/Button';
 import { useUser } from '@/lib/user-context';
+import { BUSINESS_TYPES, getBusinessTypeInfo } from '@/lib/business-profile';
+import type { BusinessType } from '@/lib/business-profile';
 import {
-  IoCameraOutline,
-  IoCheckmarkCircleOutline,
+  IoSparklesOutline,
   IoEyeOutline,
   IoEyeOffOutline,
   IoOpenOutline,
+  IoCameraOutline,
 } from 'react-icons/io5';
 
-const ONBOARDING_KEY = 'wreath-social-onboarding-seen';
+const ONBOARDING_KEY = 'biz-social-onboarding-seen';
 const TOTAL_STEPS = 5;
 
 interface OnboardingFlowProps {
@@ -24,42 +26,85 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  // Step 1 state — name
-  const [name, setName] = useState('');
+  // Step 1 state — business type
+  const [selectedType, setSelectedType] = useState<BusinessType | null>(null);
 
-  // Step 2 state — API key
+  // Step 2 state — business info
+  const [businessName, setBusinessName] = useState('');
+  const [businessDescription, setBusinessDescription] = useState('');
+  const [descriptionTouched, setDescriptionTouched] = useState(false);
+
+  // Step 3 state — API key
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
 
+  // Derived info about selected business type
+  const selectedTypeInfo = useMemo(
+    () => (selectedType ? getBusinessTypeInfo(selectedType) : null),
+    [selectedType]
+  );
+
+  // Generate a placeholder name based on selected type
+  const namePlaceholder = useMemo(() => {
+    if (!selectedTypeInfo) return 'My Business';
+    const examples: Record<string, string> = {
+      wreaths: "Sarah's Wreaths",
+      candles: "Sarah's Candles",
+      jewelry: "Sarah's Jewelry",
+      pottery: "Sarah's Pottery",
+      'baked-goods': "Sarah's Bakery",
+      soap: "Sarah's Soap Co.",
+      art: "Sarah's Art Studio",
+      clothing: "Sarah's Boutique",
+      woodwork: "Sarah's Woodshop",
+      flowers: "Sarah's Flowers",
+      crafts: "Sarah's Crafts",
+      other: "Sarah's Shop",
+    };
+    return examples[selectedTypeInfo.key] || "Sarah's Shop";
+  }, [selectedTypeInfo]);
+
   const finishOnboarding = useCallback(() => {
-    updatePreferences({ setupComplete: true });
+    const prefs: Record<string, string | boolean> = {
+      setupComplete: true,
+    };
+
+    if (businessName.trim()) {
+      prefs.displayName = businessName.trim();
+      prefs.businessName = businessName.trim();
+    }
+    if (selectedType) {
+      prefs.businessType = selectedType;
+    }
+    // Save description — use the example description as fallback if user never edited
+    const descToSave = businessDescription.trim()
+      || (!descriptionTouched && selectedTypeInfo?.exampleDescription) || '';
+    if (descToSave) {
+      prefs.businessDescription = descToSave;
+    }
+    if (apiKey.trim()) {
+      prefs.geminiApiKey = apiKey.trim();
+    }
+
+    updatePreferences(prefs);
     localStorage.setItem(ONBOARDING_KEY, 'true');
     onComplete();
-  }, [updatePreferences, onComplete]);
+  }, [updatePreferences, onComplete, businessName, selectedType, businessDescription, descriptionTouched, selectedTypeInfo, apiKey]);
 
   const handleNext = useCallback(() => {
-    // Step-specific save logic before advancing
-    if (currentStep === 1 && name.trim()) {
-      updatePreferences({ displayName: name.trim() });
-    }
-    if (currentStep === 2 && apiKey.trim()) {
-      updatePreferences({ geminiApiKey: apiKey.trim() });
-    }
-
     if (currentStep === TOTAL_STEPS - 1) {
       finishOnboarding();
       return;
     }
     setDirection(1);
     setCurrentStep((s) => s + 1);
-  }, [currentStep, name, apiKey, updatePreferences, finishOnboarding]);
+  }, [currentStep, finishOnboarding]);
 
   const handleSkip = useCallback(() => {
     finishOnboarding();
   }, [finishOnboarding]);
 
   const handleSkipApiKey = useCallback(() => {
-    // Move past the API key step without saving a key
     setDirection(1);
     setCurrentStep((s) => s + 1);
   }, []);
@@ -67,7 +112,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const isLast = currentStep === TOTAL_STEPS - 1;
 
   // Determine whether "Next" should be disabled on the current step
-  const isNextDisabled = currentStep === 1 && !name.trim();
+  const isNextDisabled = useMemo(() => {
+    if (currentStep === 1) return !selectedType;
+    if (currentStep === 2) return !businessName.trim();
+    return false;
+  }, [currentStep, selectedType, businessName]);
 
   // ---------------------------------------------------------------------------
   // Step renderers
@@ -79,53 +128,126 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         <motion.div
           animate={{ rotate: [0, 10, -10, 5, -5, 0] }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-          className="text-7xl"
         >
-          🌿
+          <IoSparklesOutline className="w-16 h-16 text-white" />
         </motion.div>
       </div>
 
       <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-3">
-        Welcome to Wreath Social!
+        Welcome to PostCraft!
       </h2>
       <p className="text-sm text-brown-light leading-relaxed">
-        Your AI-powered assistant for growing your wreath business on social media.
+        Your AI-powered social media assistant for small business.
       </p>
     </div>
   );
 
-  const renderNameStep = () => (
-    <div className="flex flex-col items-center text-center max-w-sm w-full">
-      <div className="w-40 h-40 rounded-full bg-gradient-to-br from-gold-300 to-gold-400 flex items-center justify-center mb-8 shadow-lg">
-        <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="text-6xl"
-        >
-          👋
-        </motion.div>
-      </div>
-
-      <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-3">
-        What should we call you?
+  const renderBusinessTypeStep = () => (
+    <div className="flex flex-col items-center text-center max-w-md w-full">
+      <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-2">
+        What do you sell?
       </h2>
       <p className="text-sm text-brown-light leading-relaxed mb-6">
-        Just your first name is perfect.
+        Pick the category that best describes your business.
       </p>
 
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Your name"
-        autoFocus
-        className="w-full max-w-xs px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-center text-lg placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors"
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && name.trim()) handleNext();
-        }}
-      />
+      <div className="grid grid-cols-3 gap-2.5 w-full mb-2">
+        {BUSINESS_TYPES.map((bt) => {
+          const isSelected = selectedType === bt.key;
+          return (
+            <motion.button
+              key={bt.key}
+              type="button"
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setSelectedType(bt.key)}
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
+                isSelected
+                  ? 'border-sage-500 bg-sage-50'
+                  : 'border-cream-200 bg-white hover:border-sage-200 hover:bg-cream-50'
+              }`}
+            >
+              <span className="text-2xl">{bt.emoji}</span>
+              <span className={`text-xs font-medium ${isSelected ? 'text-sage-700' : 'text-brown-light'}`}>
+                {bt.label}
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
     </div>
   );
+
+  const renderBusinessInfoStep = () => {
+    // Pre-fill description with example when first visiting step (if type selected)
+    const effectiveDescription =
+      !descriptionTouched && selectedTypeInfo && !businessDescription
+        ? selectedTypeInfo.exampleDescription
+        : businessDescription;
+
+    return (
+      <div className="flex flex-col items-center text-center max-w-sm w-full">
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gold-300 to-gold-400 flex items-center justify-center mb-6 shadow-lg">
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="text-5xl"
+          >
+            {selectedTypeInfo?.emoji || '🛍️'}
+          </motion.div>
+        </div>
+
+        <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-2">
+          Tell us about your business
+        </h2>
+        <p className="text-sm text-brown-light leading-relaxed mb-6">
+          This helps us personalize your captions and hashtags.
+        </p>
+
+        <div className="w-full space-y-4">
+          <div>
+            <label htmlFor="business-name" className="block text-sm font-medium text-brown text-left mb-1.5">
+              Business name <span className="text-sage-500">*</span>
+            </label>
+            <input
+              id="business-name"
+              type="text"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder={namePlaceholder}
+              autoFocus
+              className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && businessName.trim()) handleNext();
+              }}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="business-desc" className="block text-sm font-medium text-brown text-left mb-1.5">
+              Short description <span className="text-brown-light/50 font-normal">(optional)</span>
+            </label>
+            <textarea
+              id="business-desc"
+              value={effectiveDescription}
+              onChange={(e) => {
+                setBusinessDescription(e.target.value);
+                setDescriptionTouched(true);
+              }}
+              onFocus={() => {
+                if (!descriptionTouched && selectedTypeInfo && !businessDescription) {
+                  setBusinessDescription(selectedTypeInfo.exampleDescription);
+                  setDescriptionTouched(true);
+                }
+              }}
+              placeholder="What makes your products special?"
+              rows={2}
+              className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors resize-none"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderApiKeyStep = () => (
     <div className="flex flex-col items-center text-center max-w-sm w-full">
@@ -143,8 +265,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         Let&apos;s set up your AI helper
       </h2>
       <p className="text-sm text-brown-light leading-relaxed mb-5">
-        Wreath Social uses Google&apos;s free AI to write captions for your photos. You&apos;ll need a
-        free API key&nbsp;&mdash; it takes about 30 seconds!
+        Get personalized captions for your products. You&apos;ll need a
+        free Google AI API key&nbsp;&mdash; it takes about 30 seconds!
       </p>
 
       {/* Instructions */}
@@ -189,7 +311,6 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           spellCheck={false}
           value={showKey ? apiKey : apiKey ? '•'.repeat(Math.min(apiKey.length, 30)) : ''}
           onChange={(e) => {
-            // If showing, accept input directly. If masked, only accept if it looks like a paste (not dots).
             if (showKey || !apiKey || !e.target.value.includes('•')) {
               setApiKey(e.target.value);
             }
@@ -219,7 +340,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       </div>
 
       <p className="text-xs text-brown-light/50 mb-4">
-        🔒 Your key stays on this device only. We never see it.
+        Your key stays on this device only. We never see it.
       </p>
 
       {/* Skip for now */}
@@ -232,30 +353,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     </div>
   );
 
-  const renderUploadStep = () => (
-    <div className="flex flex-col items-center text-center max-w-sm">
-      <div className="w-40 h-40 rounded-full bg-gradient-to-br from-gold-300 to-gold-400 flex items-center justify-center mb-8 shadow-lg">
-        <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center">
-            <IoCameraOutline className="w-10 h-10 text-white" />
-          </div>
-        </motion.div>
-      </div>
-
-      <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-3">
-        Upload a Photo
-      </h2>
-      <p className="text-sm text-brown-light leading-relaxed">
-        Just snap a pic of your wreath&nbsp;&mdash; that&apos;s all you need to do. The AI will write a
-        caption, pick the hashtags, and get it ready for you to review.
-      </p>
-    </div>
-  );
-
-  const renderControlStep = () => (
+  const renderReadyStep = () => (
     <div className="flex flex-col items-center text-center max-w-sm">
       <div className="w-40 h-40 rounded-full bg-gradient-to-br from-sage-300 to-sage-500 flex items-center justify-center mb-8 shadow-lg">
         <motion.div
@@ -264,33 +362,44 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
-            <IoCheckmarkCircleOutline className="w-10 h-10 text-white" />
+            <IoCameraOutline className="w-10 h-10 text-white" />
           </div>
         </motion.div>
       </div>
 
       <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-3">
-        You Stay in Control
+        You&apos;re all set!
       </h2>
+
+      {/* Summary */}
+      {(selectedTypeInfo || businessName.trim()) && (
+        <div className="flex items-center gap-2 mb-4 px-4 py-2.5 rounded-xl bg-sage-50 border border-sage-100">
+          {selectedTypeInfo && <span className="text-xl">{selectedTypeInfo.emoji}</span>}
+          <span className="text-sm font-medium text-brown">
+            {businessName.trim() || selectedTypeInfo?.label || 'Your business'}
+          </span>
+        </div>
+      )}
+
       <p className="text-sm text-brown-light leading-relaxed">
-        Nothing posts without your approval. Edit anything, any time. This is your business&nbsp;&mdash;
-        you always have the final say.
+        Upload your first product photo and let the AI craft the perfect caption for your social media.
       </p>
     </div>
   );
 
   const stepRenderers = [
     renderWelcome,
-    renderNameStep,
+    renderBusinessTypeStep,
+    renderBusinessInfoStep,
     renderApiKeyStep,
-    renderUploadStep,
-    renderControlStep,
+    renderReadyStep,
   ];
 
   // Button label per step
   const getButtonLabel = () => {
+    if (currentStep === 0) return 'Get Started';
     if (isLast) return 'Get Started';
-    if (currentStep === 2 && apiKey.trim()) return 'Save & Continue';
+    if (currentStep === 3 && apiKey.trim()) return 'Save & Continue';
     return 'Next';
   };
 
@@ -348,7 +457,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
         {/* Hide the main Next button on the API key step when the user hasn't entered a key
             (they can still proceed via "Skip for now") */}
-        {currentStep === 2 && !apiKey.trim() ? (
+        {currentStep === 3 && !apiKey.trim() ? (
           <div className="h-[52px]" /> // spacer so layout doesn't jump
         ) : (
           <Button

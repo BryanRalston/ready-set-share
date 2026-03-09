@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useUser } from '@/lib/user-context';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 
-const ONBOARDING_KEY = 'wreath-social-onboarding-seen';
+const ONBOARDING_KEY = 'biz-social-onboarding-seen';
 
 interface AppShellProps {
   title?: string;
