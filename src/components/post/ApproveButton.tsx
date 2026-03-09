@@ -83,6 +83,7 @@ export default function ApproveButton({
   const [showGlow, setShowGlow] = useState(false);
 
   const isScheduled = !!scheduleDate;
+  const clipboardFailed = publishResults?.some(r => !r.success) ?? false;
 
   // Pre-generate particle configs to avoid re-randomizing on re-render
   const particles = useMemo(() => {
@@ -120,7 +121,7 @@ export default function ApproveButton({
       if (isScheduled) {
         return `Scheduled for ${scheduleDate}!`;
       }
-      return 'Copied & Saved!';
+      return clipboardFailed ? 'Saved!' : 'Copied & Saved!';
     }
 
     // Not yet approved
@@ -284,7 +285,7 @@ export default function ApproveButton({
 
       {/* Post-save nudge with direct links */}
       <AnimatePresence>
-        {approved && (
+        {approved && !clipboardFailed && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

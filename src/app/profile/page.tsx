@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/lib/user-context';
-import { isGeminiConfigured } from '@/lib/gemini';
 import AppShell from '@/components/layout/AppShell';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -203,7 +202,7 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-2 mb-1.5">
                   <IoKeyOutline className="w-4 h-4 text-brown-light" />
                   <span className="text-sm text-brown font-medium">Gemini API Key</span>
-                  {isGeminiConfigured() && (
+                  {geminiApiKey && (
                     <IoCheckmarkCircle className="w-3.5 h-3.5 text-sage-500" />
                   )}
                 </div>

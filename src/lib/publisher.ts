@@ -48,12 +48,14 @@ export async function publishPost(post: {
         success: true,
       }],
     };
-  } catch (err) {
+  } catch {
+    // Clipboard API can fail in headless browsers, iframes, or without user gesture.
+    // Show a friendly message instead of the raw technical error.
     return {
       results: [{
         platform: 'clipboard',
         success: false,
-        error: err instanceof Error ? err.message : 'Could not copy to clipboard',
+        error: 'Unable to copy automatically — long-press the caption text above to copy it manually.',
       }],
     };
   }
