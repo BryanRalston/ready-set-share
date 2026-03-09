@@ -1,4 +1,6 @@
-// Reminder system using browser Notification API + localStorage
+// Reminder system using Service Worker notifications + localStorage
+
+import { showSWNotification } from './sw-register';
 
 export interface Reminder {
   id: string;
@@ -70,16 +72,13 @@ export function checkAndFireReminders(): void {
 
   for (const reminder of reminders) {
     if (!reminder.fired && reminder.dateTime <= now) {
-      // Fire browser notification
+      // Fire notification via service worker (with fallback)
       if (canNotify()) {
         const preview = reminder.caption.length > 80
           ? reminder.caption.slice(0, 77) + '...'
           : reminder.caption;
-        new Notification('Time to post!', {
-          body: preview || 'Your scheduled post is ready to go!',
-          icon: '/icons/icon-192x192.png',
-          tag: reminder.id,
-        });
+        const body = preview || 'Your scheduled post is ready to go!';
+        showSWNotification('Time to post!', body, reminder.id);
       }
       reminder.fired = true;
       changed = true;

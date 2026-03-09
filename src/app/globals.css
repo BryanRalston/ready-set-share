@@ -27,13 +27,13 @@
   --color-brown-light: #8B6F5A;
   --color-brown-dark: #4a3628;
 
-  --color-dark-bg: #1a2e1a;
-  --color-dark-card: #243524;
-  --color-dark-text: #FDF6EC;
+  --color-dark-bg: #1a1a1a;
+  --color-dark-card: #2d2d2d;
+  --color-dark-text: #f0f0f0;
   --color-dark-accent: #A8C5A0;
   --color-dark-highlight: #D4A574;
-  --color-dark-border: #2d4a2d;
-  --color-dark-muted: #8B9B83;
+  --color-dark-border: #3a3a3a;
+  --color-dark-muted: #b0b0b0;
 
   --font-heading: 'Playfair Display', serif;
   --font-body: 'Inter', sans-serif;
@@ -71,11 +71,11 @@ html.dark .bg-white {
 }
 
 html.dark .bg-white\/80 {
-  background-color: rgba(36, 53, 36, 0.8);
+  background-color: rgba(45, 45, 45, 0.8);
 }
 
 html.dark .bg-cream-100\/80 {
-  background-color: rgba(26, 46, 26, 0.8);
+  background-color: rgba(26, 26, 26, 0.8);
 }
 
 html.dark .text-brown {
@@ -87,11 +87,11 @@ html.dark .text-brown-light {
 }
 
 html.dark .text-brown-light\/40 {
-  color: rgba(139, 155, 131, 0.4);
+  color: rgba(176, 176, 176, 0.4);
 }
 
 html.dark .text-brown-light\/60 {
-  color: rgba(139, 155, 131, 0.6);
+  color: rgba(176, 176, 176, 0.6);
 }
 
 html.dark .border-cream-200 {
@@ -103,7 +103,7 @@ html.dark .border-t.border-cream-200 {
 }
 
 html.dark .bg-sage-50 {
-  background-color: rgba(36, 53, 36, 0.6);
+  background-color: rgba(45, 45, 45, 0.6);
 }
 
 html.dark .bg-gold-50 {

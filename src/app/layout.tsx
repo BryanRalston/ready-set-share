@@ -3,6 +3,7 @@ import "./globals.css";
 import { UserProvider } from "@/lib/user-context";
 import DarkModeInit from "@/components/layout/DarkModeInit";
 import InstallPrompt from "@/components/layout/InstallPrompt";
+import ServiceWorkerRegistrar from "@/components/layout/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
   title: "PostCraft",
@@ -52,6 +53,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased min-h-screen bg-cream-100">
         <DarkModeInit />
+        <ServiceWorkerRegistrar />
         <UserProvider>
           {children}
           <InstallPrompt />

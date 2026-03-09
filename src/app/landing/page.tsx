@@ -89,13 +89,15 @@ export default function LandingPage() {
     || (displayName && displayName !== 'there' ? displayName : '')
     || 'My Business';
 
-  // Determine the subtitle
-  const heroSubtitle = businessDescription
-    || 'Quality products crafted with care. Every piece is made with attention to detail and love for the craft.';
+  // Determine hero subtitle vs. about text
+  // If the business description is long (>60 chars), use it in About and a shorter tagline in the hero.
+  // If short or absent, keep it in the hero and show a generic expanded description in About.
+  const defaultTagline = 'Quality products crafted with care.';
+  const defaultAbout = 'Every piece is thoughtfully crafted with quality materials and attention to detail. We take pride in creating products that bring joy to our customers.';
 
-  // About section text
-  const aboutText = businessDescription
-    || 'Quality products crafted with care. Every piece is made with attention to detail and love for the craft.';
+  const hasLongDescription = businessDescription && businessDescription.length > 60;
+  const heroSubtitle = hasLongDescription ? defaultTagline : (businessDescription || defaultTagline);
+  const aboutText = hasLongDescription ? businessDescription : defaultAbout;
 
   return (
     <div className="min-h-screen bg-cream-50">

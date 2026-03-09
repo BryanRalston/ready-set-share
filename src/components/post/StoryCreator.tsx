@@ -43,7 +43,7 @@ export default function StoryCreator({ imageUrl }: StoryCreatorProps) {
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       // Fill background
-      ctx.fillStyle = '#1a2e1a';
+      ctx.fillStyle = '#1a1a1a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Calculate crop to fill (cover behavior)

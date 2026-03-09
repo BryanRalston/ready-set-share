@@ -15,8 +15,7 @@ import { analyzeProductPhoto, isGeminiConfigured } from '@/lib/gemini';
 import { getPhotos, getPhotoById, addPhoto, createThumbnail } from '@/lib/photo-library';
 import type { LibraryPhoto } from '@/lib/photo-library';
 import { useUser } from '@/lib/user-context';
-import { IoArrowBackOutline, IoMicOutline, IoCreateOutline, IoKeyOutline, IoImagesOutline, IoCheckmarkCircle } from 'react-icons/io5';
-import Link from 'next/link';
+import { IoArrowBackOutline, IoMicOutline, IoCreateOutline, IoImagesOutline, IoCheckmarkCircle } from 'react-icons/io5';
 import Image from 'next/image';
 
 type UploadStep = 'choose' | 'library-picker' | 'analyzing' | 'results' | 'caption-choice';
@@ -46,7 +45,6 @@ function UploadPageInner() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [captionMode, setCaptionMode] = useState<CaptionMode>(null);
-  const [skipAiGate, setSkipAiGate] = useState(false);
   const aiConfigured = isGeminiConfigured();
 
   // Library picker state
@@ -271,38 +269,7 @@ function UploadPageInner() {
     <AppShell title="Upload Photo" rightAction={backAction} showNotifications={false}>
       <div className="space-y-6">
         <AnimatePresence mode="wait">
-          {step === 'choose' && !aiConfigured && !skipAiGate && (
-            <motion.div key="ai-gate" exit={{ opacity: 0, y: -12 }}>
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-8 px-4"
-              >
-                <div className="w-14 h-14 rounded-full bg-sage-50 flex items-center justify-center mx-auto mb-4">
-                  <IoKeyOutline className="w-7 h-7 text-sage-500" />
-                </div>
-                <h3 className="text-lg font-semibold text-brown font-[family-name:var(--font-heading)] mb-2">
-                  Set up AI captions first
-                </h3>
-                <p className="text-sm text-brown-light mb-6 max-w-[280px] mx-auto">
-                  To get personalized captions for your products, you&apos;ll need to set up your free AI key.
-                </p>
-                <Link href="/profile">
-                  <button className="inline-flex items-center justify-center rounded-full font-medium px-5 py-2.5 text-base bg-sage-500 text-white hover:bg-sage-600 active:bg-sage-700 shadow-sm transition-colors">
-                    Go to Settings
-                  </button>
-                </Link>
-                <button
-                  onClick={() => setSkipAiGate(true)}
-                  className="block mx-auto mt-4 text-sm text-brown-light hover:text-brown transition-colors underline underline-offset-2"
-                >
-                  Continue without AI
-                </button>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {step === 'choose' && (aiConfigured || skipAiGate) && (
+          {step === 'choose' && (
             <motion.div key="choose" exit={{ opacity: 0, y: -12 }}>
               <motion.p
                 initial={{ opacity: 0 }}
