@@ -25,6 +25,9 @@ import { getCurrentStreak } from '@/lib/streak';
 import { getPostCount } from '@/lib/posting-analytics';
 import { checkAndFireReminders, getUpcomingReminders, type Reminder } from '@/lib/reminders';
 import { getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
+import { checkWeekRollover } from '@/lib/goals';
+import GoalTracker from '@/components/home/GoalTracker';
+import PerformancePrompt from '@/components/home/PerformancePrompt';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -55,6 +58,8 @@ export default function HomePage() {
     setUpcomingReminders(getUpcomingReminders(3));
     // Fire any overdue notifications on mount
     checkAndFireReminders();
+    // Handle weekly goal rollover
+    checkWeekRollover();
   }, []);
 
   const hasPosts = drafts.length > 0;
@@ -107,6 +112,12 @@ export default function HomePage() {
 
         {/* Streak tracker */}
         <StreakTracker />
+
+        {/* Weekly goal tracker */}
+        <GoalTracker />
+
+        {/* Performance prompt for unlogged posts */}
+        <PerformancePrompt />
 
         {/* Content idea */}
         <ContentIdea />
@@ -232,7 +243,7 @@ export default function HomePage() {
           transition={{ delay: 0.6, type: 'spring', stiffness: 300, damping: 20 }}
           whileTap={{ scale: 0.9 }}
           whileHover={{ scale: 1.05 }}
-          className="fixed bottom-20 right-4 w-14 h-14 rounded-full bg-sage-500 text-white shadow-lg shadow-sage-500/30 flex items-center justify-center z-20 sm:right-[calc(50%-224px+16px)]"
+          className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-sage-500 text-white shadow-lg shadow-sage-500/30 flex items-center justify-center z-20 sm:right-[calc(50%-224px+16px)]"
         >
           <IoAddOutline className="w-7 h-7" />
         </motion.div>

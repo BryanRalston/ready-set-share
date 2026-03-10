@@ -15,10 +15,11 @@ import { analyzeProductPhoto, isGeminiConfigured } from '@/lib/gemini';
 import { getPhotos, getPhotoById, addPhoto, createThumbnail } from '@/lib/photo-library';
 import type { LibraryPhoto } from '@/lib/photo-library';
 import { useUser } from '@/lib/user-context';
-import { IoArrowBackOutline, IoMicOutline, IoCreateOutline, IoImagesOutline, IoCheckmarkCircle } from 'react-icons/io5';
+import TemplatePicker from '@/components/upload/TemplatePicker';
+import { IoArrowBackOutline, IoMicOutline, IoCreateOutline, IoImagesOutline, IoCheckmarkCircle, IoListOutline, IoDocumentTextOutline } from 'react-icons/io5';
 import Image from 'next/image';
 
-type UploadStep = 'choose' | 'library-picker' | 'analyzing' | 'results' | 'caption-choice';
+type UploadStep = 'choose' | 'library-picker' | 'analyzing' | 'results' | 'caption-choice' | 'caption-style' | 'template-picker';
 type CaptionMode = 'write' | 'voice' | null;
 
 export default function UploadPage() {
@@ -73,8 +74,12 @@ function UploadPageInner() {
           : `data:image/jpeg;base64,${photo.base64}`;
         setPreviewUrl(dataUrl);
         setImageBase64(photo.base64);
-        runAnalysis(photo.base64);
         setSavedToLibrary(true); // Already in library
+        if (isGeminiConfigured()) {
+          runAnalysis(photo.base64);
+        } else {
+          setStep('caption-style');
+        }
       }
     } catch (err) {
       console.error('Failed to load library photo:', err);
@@ -148,7 +153,11 @@ function UploadPageInner() {
     try {
       const base64 = await fileToBase64(file);
       setImageBase64(base64);
-      runAnalysis(base64);
+      if (isGeminiConfigured()) {
+        runAnalysis(base64);
+      } else {
+        setStep('caption-style');
+      }
     } catch {
       const name = businessName || 'our shop';
       setAnalysisResult({
@@ -185,7 +194,11 @@ function UploadPageInner() {
     setPreviewUrl(dataUrl);
     setImageBase64(photo.base64);
     setSavedToLibrary(true); // Already in library
-    runAnalysis(photo.base64);
+    if (isGeminiConfigured()) {
+      runAnalysis(photo.base64);
+    } else {
+      setStep('caption-style');
+    }
   };
 
   const handleSaveToLibrary = async () => {
@@ -256,9 +269,43 @@ function UploadPageInner() {
     router.push('/');
   };
 
+  const handleTemplateCaption = (caption: string, hashtags: string[]) => {
+    setAnalysisResult({
+      caption,
+      hashtags: hashtags.map(h => h.startsWith('#') ? h : `#${h}`),
+      platform: 'Instagram',
+      tip: 'Personalize your caption — swap out any placeholder text to make it yours.',
+      postType: 'Single Post',
+    });
+    setCaptionMode('write');
+    setStep('results');
+  };
+
+  const handleWriteOwnCaption = () => {
+    setAnalysisResult({
+      caption: '',
+      hashtags: ['#handmade', '#shopsmall', '#smallbusiness'],
+      platform: 'Instagram',
+      tip: 'Write from the heart — authentic captions perform best.',
+      postType: 'Single Post',
+    });
+    setCaptionMode('write');
+    setStep('results');
+  };
+
+  const getBackAction = () => {
+    if (step === 'results' && aiConfigured) return () => { setStep('caption-choice'); setCaptionMode(null); };
+    if (step === 'results' && !aiConfigured) return () => { setStep('caption-style'); setCaptionMode(null); };
+    if (step === 'template-picker') return () => setStep('caption-style');
+    if (step === 'caption-style') return handleClear;
+    if (step === 'library-picker') return () => setStep('choose');
+    if (step === 'caption-choice') return handleClear;
+    return handleClear;
+  };
+
   const backAction = step !== 'choose' ? (
     <button
-      onClick={step === 'results' ? () => { setStep('caption-choice'); setCaptionMode(null); } : step === 'library-picker' ? () => setStep('choose') : handleClear}
+      onClick={getBackAction()}
       className="w-9 h-9 rounded-full bg-white border border-cream-200 flex items-center justify-center text-brown-light hover:text-sage-500 transition-colors"
     >
       <IoArrowBackOutline size={18} />
@@ -355,6 +402,128 @@ function UploadPageInner() {
             </motion.div>
           )}
 
+          {step === 'caption-style' && (
+            <motion.div key="caption-style" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -12 }}>
+              {previewUrl && (
+                <PhotoUploader
+                  onPhotoSelected={handlePhotoSelected}
+                  previewUrl={previewUrl}
+                  onClear={handleClear}
+                />
+              )}
+
+              {/* Save to Library button */}
+              {imageBase64 && !savedToLibrary && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  onClick={handleSaveToLibrary}
+                  disabled={savingToLibrary}
+                  className="flex items-center justify-center gap-2 w-full mt-3 py-2 text-sm text-sage-500 hover:text-sage-600 transition-colors disabled:opacity-50"
+                >
+                  <IoImagesOutline className="w-4 h-4" />
+                  {savingToLibrary ? 'Saving...' : 'Save to Library'}
+                </motion.button>
+              )}
+              {savedToLibrary && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center justify-center gap-1.5 mt-3 py-2 text-sm text-sage-500"
+                >
+                  <IoCheckmarkCircle className="w-4 h-4" />
+                  Saved to Library
+                </motion.div>
+              )}
+
+              <div className="mt-6 space-y-3">
+                <p className="text-sm font-medium text-brown text-center">Choose your caption style</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.button
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    onClick={() => setStep('template-picker')}
+                    className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white border border-cream-200 hover:border-sage-300 transition-all"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-sage-50 flex items-center justify-center">
+                      <IoListOutline className="w-5 h-5 text-sage-500" />
+                    </div>
+                    <span className="text-sm font-medium text-brown">Use a Template</span>
+                    <span className="text-xs text-brown-light">Fill-in-the-blank captions</span>
+                  </motion.button>
+                  <motion.button
+                    initial={{ opacity: 0, x: 12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    onClick={handleWriteOwnCaption}
+                    className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white border border-cream-200 hover:border-sage-300 transition-all"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gold-50 flex items-center justify-center">
+                      <IoDocumentTextOutline className="w-5 h-5 text-gold-300" />
+                    </div>
+                    <span className="text-sm font-medium text-brown">Write My Own</span>
+                    <span className="text-xs text-brown-light">Start from scratch</span>
+                  </motion.button>
+                </div>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-xs text-brown-light/60 text-center pt-1"
+                >
+                  Add a Gemini API key in Settings for AI-generated captions
+                </motion.p>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 'template-picker' && (
+            <motion.div key="template-picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -12 }}>
+              {previewUrl && (
+                <PhotoUploader
+                  onPhotoSelected={handlePhotoSelected}
+                  previewUrl={previewUrl}
+                  onClear={handleClear}
+                />
+              )}
+
+              {/* Save to Library button */}
+              {imageBase64 && !savedToLibrary && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  onClick={handleSaveToLibrary}
+                  disabled={savingToLibrary}
+                  className="flex items-center justify-center gap-2 w-full mt-3 py-2 text-sm text-sage-500 hover:text-sage-600 transition-colors disabled:opacity-50"
+                >
+                  <IoImagesOutline className="w-4 h-4" />
+                  {savingToLibrary ? 'Saving...' : 'Save to Library'}
+                </motion.button>
+              )}
+              {savedToLibrary && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center justify-center gap-1.5 mt-3 py-2 text-sm text-sage-500"
+                >
+                  <IoCheckmarkCircle className="w-4 h-4" />
+                  Saved to Library
+                </motion.div>
+              )}
+
+              <div className="mt-4">
+                <TemplatePicker
+                  businessType={businessType}
+                  onSelectCaption={handleTemplateCaption}
+                  onCancel={() => setStep('caption-style')}
+                />
+              </div>
+            </motion.div>
+          )}
+
           {step === 'caption-choice' && (
             <motion.div key="caption-choice" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -12 }}>
               {previewUrl && (
@@ -418,6 +587,17 @@ function UploadPageInner() {
                     <span className="text-sm font-medium text-brown">Say it out loud</span>
                   </motion.button>
                 </div>
+
+                {/* Template option for AI users */}
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  onClick={() => setStep('template-picker')}
+                  className="w-full text-center text-sm text-sage-500 hover:text-sage-600 transition-colors py-1"
+                >
+                  Or use a template
+                </motion.button>
 
                 <AnimatePresence>
                   {captionMode === 'voice' && (

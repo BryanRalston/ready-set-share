@@ -10,8 +10,10 @@ import StoryCreator from '@/components/post/StoryCreator';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { IoBookmarkOutline, IoPhonePortraitOutline } from 'react-icons/io5';
-import { publishPost, saveDraft, getDraftById, type PublishResult } from '@/lib/publisher';
+import { sharePost, saveDraft, getDraftById, type PublishResult } from '@/lib/publisher';
 import { recordPost } from '@/lib/streak';
+import { recordGoalPost } from '@/lib/goals';
+import { createPerformanceEntry } from '@/lib/performance-log';
 
 // Fallback data — used only when no pending post or draft is found
 const MOCK_POST = {
@@ -73,6 +75,7 @@ export default function PostPageClient({ id }: { id: string }) {
   const [approving, setApproving] = useState(false);
   const [createStory, setCreateStory] = useState(false);
   const [publishResults, setPublishResults] = useState<PublishResult[]>([]);
+  const [wasShared, setWasShared] = useState(false);
 
   const handleApprove = async () => {
     setApproving(true);
@@ -86,15 +89,18 @@ export default function PostPageClient({ id }: { id: string }) {
     };
 
     // Always copy to clipboard + save as draft (pass existing id for drafts)
-    saveDraft(publishPayload, id !== 'new' ? id : undefined);
+    const savedDraft = saveDraft(publishPayload, id !== 'new' ? id : undefined);
 
     try {
-      const { results } = await publishPost(publishPayload);
+      const { results, shared } = await sharePost(publishPayload);
       setPublishResults(results);
+      setWasShared(shared);
 
-      // Record the post for streak tracking if clipboard copy succeeded
+      // Record the post for streak tracking if share/clipboard succeeded
       if (results.some(r => r.success)) {
         recordPost();
+        recordGoalPost();
+        createPerformanceEntry(savedDraft.id, caption, platforms);
       }
     } catch {
       setPublishResults([{
@@ -197,6 +203,7 @@ export default function PostPageClient({ id }: { id: string }) {
             loading={approving}
             scheduleDate={scheduleType === 'scheduled' ? scheduleDate : undefined}
             publishResults={publishResults.length > 0 ? publishResults : undefined}
+            wasShared={wasShared}
           />
           <Button
             variant="ghost"

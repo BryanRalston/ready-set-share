@@ -213,7 +213,7 @@ export default function PostEditor({
         <Card>
           <h4 className="text-sm font-medium text-brown mb-3">Post to</h4>
           <div className="flex gap-2">
-            {['Instagram', 'Pinterest'].map((p) => (
+            {['Instagram', 'Pinterest', 'Facebook'].map((p) => (
               <button
                 key={p}
                 onClick={() => togglePlatform(p)}

@@ -23,13 +23,14 @@ export default function AppShell({ title, showNotifications, rightAction, childr
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    // Only show onboarding on the home page (not Calendar, Analytics, etc.)
+    if (typeof window !== 'undefined' && pathname === '/') {
       const seen = localStorage.getItem(ONBOARDING_KEY);
       if (!seen) {
         setShowOnboarding(true);
       }
     }
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-cream-100">

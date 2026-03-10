@@ -7,6 +7,7 @@ import EngagementChart from '@/components/analytics/EngagementChart';
 import PlatformBreakdown from '@/components/analytics/PlatformBreakdown';
 import MonthlyRecap from '@/components/analytics/MonthlyRecap';
 import AnalyticsEmptyState from '@/components/analytics/AnalyticsEmptyState';
+import PostPerformance from '@/components/analytics/PostPerformance';
 import { getMonthStats } from '@/lib/analytics-data';
 
 const container = {
@@ -44,6 +45,11 @@ export default function AnalyticsPage() {
 
           <motion.div variants={item}>
             <AnalyticsEmptyState />
+          </motion.div>
+
+          {/* Post performance (may have data even when no analytics data) */}
+          <motion.div variants={item}>
+            <PostPerformance />
           </motion.div>
         </motion.div>
       </AppShell>
@@ -84,6 +90,11 @@ export default function AnalyticsPage() {
         {/* Monthly recap */}
         <motion.div variants={item}>
           <MonthlyRecap />
+        </motion.div>
+
+        {/* Post performance */}
+        <motion.div variants={item}>
+          <PostPerformance />
         </motion.div>
       </motion.div>
     </AppShell>

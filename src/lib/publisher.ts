@@ -62,6 +62,71 @@ export async function publishPost(post: {
   }
 }
 
+// Share post via Web Share API with clipboard fallback
+export async function sharePost(post: {
+  caption: string;
+  hashtags: string[];
+  imageBase64?: string;
+  imageUrl?: string;
+  platforms: string[];
+}): Promise<{ results: PublishResult[]; shared: boolean }> {
+  const fullText = buildPostText(post.caption, post.hashtags);
+
+  // Check if Web Share API is available (primarily mobile)
+  if (navigator.share) {
+    try {
+      const shareData: ShareData = {
+        text: fullText,
+      };
+
+      // If we have an image, try to share it as a file (Web Share Level 2)
+      if (post.imageBase64 || post.imageUrl) {
+        const imageData = post.imageBase64 || post.imageUrl;
+        if (imageData) {
+          try {
+            const blob = await dataUrlToBlob(imageData);
+            const file = new File([blob], 'post.jpg', { type: blob.type });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              shareData.files = [file];
+            }
+          } catch {
+            // Image sharing not supported, continue with text only
+          }
+        }
+      }
+
+      await navigator.share(shareData);
+      return {
+        results: [{ platform: 'share', success: true }],
+        shared: true,
+      };
+    } catch (err) {
+      // User cancelled the share dialog — not an error
+      if (err instanceof Error && err.name === 'AbortError') {
+        return {
+          results: [{ platform: 'share', success: false, error: 'Share cancelled' }],
+          shared: false,
+        };
+      }
+      // Fall through to clipboard
+    }
+  }
+
+  // Fallback: clipboard copy
+  const clipboardResult = await publishPost(post);
+  return { ...clipboardResult, shared: false };
+}
+
+// Helper to convert base64 data URL to Blob
+function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  return fetch(dataUrl).then(r => r.blob());
+}
+
+// Check if Web Share API is available
+export function canShare(): boolean {
+  return typeof navigator !== 'undefined' && !!navigator.share;
+}
+
 // --- Draft management (localStorage) ---
 
 export function saveDraft(post: Omit<PostDraft, 'id' | 'createdAt'>, id?: string): PostDraft {

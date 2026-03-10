@@ -8,7 +8,9 @@ import {
   IoCopyOutline,
   IoCloseCircle,
   IoOpenOutline,
+  IoShareSocialOutline,
 } from 'react-icons/io5';
+import { canShare } from '@/lib/publisher';
 
 interface ApproveButtonProps {
   onApprove: () => void;
@@ -20,6 +22,7 @@ interface ApproveButtonProps {
     postId?: string;
     error?: string;
   }>;
+  wasShared?: boolean;
 }
 
 interface ParticleConfig {
@@ -77,6 +80,7 @@ export default function ApproveButton({
   loading,
   scheduleDate,
   publishResults,
+  wasShared,
 }: ApproveButtonProps) {
   const [approved, setApproved] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -84,6 +88,7 @@ export default function ApproveButton({
 
   const isScheduled = !!scheduleDate;
   const clipboardFailed = publishResults?.some(r => !r.success) ?? false;
+  const webShareAvailable = canShare();
 
   // Pre-generate particle configs to avoid re-randomizing on re-render
   const particles = useMemo(() => {
@@ -121,6 +126,9 @@ export default function ApproveButton({
       if (isScheduled) {
         return `Scheduled for ${scheduleDate}!`;
       }
+      if (wasShared) {
+        return 'Shared!';
+      }
       return clipboardFailed ? 'Saved!' : 'Copied & Saved!';
     }
 
@@ -128,7 +136,7 @@ export default function ApproveButton({
     if (isScheduled) {
       return 'Schedule Post';
     }
-    return 'Approve & Copy';
+    return webShareAvailable ? 'Share Post' : 'Approve & Copy';
   };
 
   const label = getButtonLabel();
@@ -147,11 +155,19 @@ export default function ApproveButton({
           >
             <div className="px-4 py-3 rounded-xl bg-cream-50 border border-cream-200">
               <p className="text-xs font-semibold text-brown mb-1.5">How it works</p>
-              <ol className="text-xs text-brown-light space-y-1 list-decimal list-inside">
-                <li>Tap <span className="font-medium text-brown">Approve &amp; Copy</span> below</li>
-                <li>Your caption is copied to your clipboard</li>
-                <li>Open Instagram or Pinterest and paste it into a new post</li>
-              </ol>
+              {webShareAvailable ? (
+                <ol className="text-xs text-brown-light space-y-1 list-decimal list-inside">
+                  <li>Tap <span className="font-medium text-brown">Share Post</span> below</li>
+                  <li>Pick your social media app</li>
+                  <li>Done!</li>
+                </ol>
+              ) : (
+                <ol className="text-xs text-brown-light space-y-1 list-decimal list-inside">
+                  <li>Tap <span className="font-medium text-brown">Approve &amp; Copy</span> below</li>
+                  <li>Your caption is copied to your clipboard</li>
+                  <li>Open Instagram or Pinterest and paste it into a new post</li>
+                </ol>
+              )}
             </div>
           </motion.div>
         )}
@@ -208,18 +224,26 @@ export default function ApproveButton({
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 15 }}
             >
-              <IoCheckmarkCircle className="w-5 h-5" />
+              {wasShared ? (
+                <IoShareSocialOutline className="w-5 h-5" />
+              ) : (
+                <IoCheckmarkCircle className="w-5 h-5" />
+              )}
             </motion.div>
             {label}
           </>
         ) : loading ? (
           <>
             <IoSparkles className="w-5 h-5 animate-pulse" />
-            Copying...
+            {webShareAvailable ? 'Sharing...' : 'Copying...'}
           </>
         ) : (
           <>
-            <IoCopyOutline className="w-5 h-5" />
+            {webShareAvailable ? (
+              <IoShareSocialOutline className="w-5 h-5" />
+            ) : (
+              <IoCopyOutline className="w-5 h-5" />
+            )}
             {label}
           </>
         )}
@@ -247,10 +271,16 @@ export default function ApproveButton({
                     : 'bg-red-50 text-red-600'
                 }`}
               >
-                <IoCopyOutline className="w-4 h-4" />
+                {wasShared ? (
+                  <IoShareSocialOutline className="w-4 h-4" />
+                ) : (
+                  <IoCopyOutline className="w-4 h-4" />
+                )}
                 <span className="flex-1">
                   {result.success
-                    ? 'Caption copied to clipboard — paste it into your social app!'
+                    ? wasShared
+                      ? 'Post shared successfully!'
+                      : 'Caption copied to clipboard — paste it into your social app!'
                     : result.error || 'Could not copy to clipboard'}
                 </span>
                 {result.success ? (
@@ -274,10 +304,21 @@ export default function ApproveButton({
             transition={{ delay: 0.3 }}
           >
             <div className="mt-3 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-gold-50 border border-gold-200">
-              <IoCopyOutline className="w-4 h-4 text-gold-400 shrink-0" />
-              <p className="text-xs text-brown-light">
-                <span className="font-medium text-brown">Caption will be copied to your clipboard</span> so you can paste it directly into Instagram, Facebook, or Pinterest
-              </p>
+              {webShareAvailable ? (
+                <>
+                  <IoShareSocialOutline className="w-4 h-4 text-gold-400 shrink-0" />
+                  <p className="text-xs text-brown-light">
+                    <span className="font-medium text-brown">Share directly to your social apps</span> — Instagram, Facebook, Pinterest, and more
+                  </p>
+                </>
+              ) : (
+                <>
+                  <IoCopyOutline className="w-4 h-4 text-gold-400 shrink-0" />
+                  <p className="text-xs text-brown-light">
+                    <span className="font-medium text-brown">Caption will be copied to your clipboard</span> so you can paste it directly into Instagram, Facebook, or Pinterest
+                  </p>
+                </>
+              )}
             </div>
           </motion.div>
         )}
@@ -291,34 +332,45 @@ export default function ApproveButton({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.0 }}
           >
-            <div className="mt-3 px-4 py-3 rounded-xl bg-sage-50 border border-sage-200">
-              <div className="flex items-center gap-2.5 mb-2.5">
-                <IoCheckmarkCircle className="w-4 h-4 text-sage-500 shrink-0" />
-                <p className="text-xs text-brown-light">
-                  <span className="font-medium text-sage-700">Caption copied!</span> Now open your social media app and paste.
-                </p>
+            {wasShared ? (
+              <div className="mt-3 px-4 py-3 rounded-xl bg-sage-50 border border-sage-200">
+                <div className="flex items-center gap-2.5">
+                  <IoShareSocialOutline className="w-4 h-4 text-sage-500 shrink-0" />
+                  <p className="text-xs text-brown-light">
+                    <span className="font-medium text-sage-700">Post shared!</span> Your draft has been saved.
+                  </p>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white border border-sage-200 text-xs font-medium text-brown hover:bg-sage-50 transition-colors"
-                >
-                  <IoOpenOutline className="w-3.5 h-3.5" />
-                  Open Instagram
-                </a>
-                <a
-                  href="https://pinterest.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white border border-sage-200 text-xs font-medium text-brown hover:bg-sage-50 transition-colors"
-                >
-                  <IoOpenOutline className="w-3.5 h-3.5" />
-                  Open Pinterest
-                </a>
+            ) : (
+              <div className="mt-3 px-4 py-3 rounded-xl bg-sage-50 border border-sage-200">
+                <div className="flex items-center gap-2.5 mb-2.5">
+                  <IoCheckmarkCircle className="w-4 h-4 text-sage-500 shrink-0" />
+                  <p className="text-xs text-brown-light">
+                    <span className="font-medium text-sage-700">Caption copied!</span> Now open your social media app and paste.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <a
+                    href="https://instagram.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white border border-sage-200 text-xs font-medium text-brown hover:bg-sage-50 transition-colors"
+                  >
+                    <IoOpenOutline className="w-3.5 h-3.5" />
+                    Open Instagram
+                  </a>
+                  <a
+                    href="https://pinterest.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white border border-sage-200 text-xs font-medium text-brown hover:bg-sage-50 transition-colors"
+                  >
+                    <IoOpenOutline className="w-3.5 h-3.5" />
+                    Open Pinterest
+                  </a>
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

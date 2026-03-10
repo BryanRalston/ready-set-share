@@ -31,6 +31,8 @@ import { getCurrentStreak } from '@/lib/streak';
 import { getDrafts } from '@/lib/publisher';
 import VoiceProfileCard from '@/components/profile/VoiceProfile';
 import LandingPagePreview from '@/components/profile/LandingPagePreview';
+import GitHubDeploy from '@/components/profile/GitHubDeploy';
+import DataManagement from '@/components/profile/DataManagement';
 import QRGenerator from '@/components/profile/QRGenerator';
 import ShareCard from '@/components/social/ShareCard';
 import { BUSINESS_TYPES, getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
@@ -195,7 +197,7 @@ export default function ProfilePage() {
                       <button
                         key={bt.key}
                         onClick={() => handleSelectBusinessType(bt.key)}
-                        className={`text-xs px-2 py-1.5 rounded-lg border transition-colors text-left ${
+                        className={`text-xs px-2 py-1.5 rounded-lg border transition-colors text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 ${
                           businessType === bt.key
                             ? 'bg-sage-50 border-sage-300 text-brown font-medium'
                             : 'bg-cream-50 border-cream-200 text-brown-light hover:bg-cream-100'
@@ -420,6 +422,16 @@ export default function ProfilePage() {
           <LandingPagePreview />
         </motion.div>
 
+        {/* GitHub Pages Deploy */}
+        <motion.div variants={fadeUp}>
+          <GitHubDeploy />
+        </motion.div>
+
+        {/* Data Management — Download Website, Export, Import */}
+        <motion.div variants={fadeUp}>
+          <DataManagement />
+        </motion.div>
+
         {/* QR Code Generator */}
         <motion.div variants={fadeUp}>
           <QRGenerator />
@@ -449,7 +461,10 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={toggleDarkMode}
-                className={`relative w-11 h-6 rounded-full transition-colors ${
+                aria-label={darkMode ? 'Disable dark mode' : 'Enable dark mode'}
+                role="switch"
+                aria-checked={darkMode}
+                className={`relative w-11 h-6 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 focus-visible:ring-offset-2 ${
                   darkMode ? 'bg-sage-500' : 'bg-cream-200'
                 }`}
               >

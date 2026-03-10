@@ -1,16 +1,21 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { IoGlobeOutline, IoShareOutline, IoOpenOutline } from 'react-icons/io5';
+import { IoGlobeOutline, IoShareOutline, IoOpenOutline, IoDownloadOutline } from 'react-icons/io5';
 import { useUser } from '@/lib/user-context';
+import { generateLandingHTML } from '@/lib/landing-generator';
+import { getPhotos } from '@/lib/photo-library';
+import { getConnectedAccounts } from '@/lib/social-accounts';
 
 export default function LandingPagePreview() {
-  const { businessName, businessDescription } = useUser();
+  const { businessName, businessDescription, businessType } = useUser();
   const shareTitle = businessName || 'My Business';
   const shareText = businessDescription || 'Check out our quality products!';
+  const [downloading, setDownloading] = useState(false);
 
   const handleShare = async () => {
     const url = `${window.location.origin}/landing`;
@@ -28,6 +33,53 @@ export default function LandingPagePreview() {
       await navigator.clipboard.writeText(url);
       alert('Link copied!');
     }
+  };
+
+  const handleDownloadHtml = async () => {
+    setDownloading(true);
+    try {
+      let photos: Array<{ base64: string; name?: string }> = [];
+      try {
+        const allPhotos = await getPhotos();
+        photos = allPhotos.slice(0, 6).map((p) => ({
+          base64: p.thumbnail || p.base64,
+          name: p.name,
+        }));
+      } catch {
+        // IndexedDB unavailable
+      }
+
+      const socialAccounts = getConnectedAccounts();
+      const socialLinks = socialAccounts
+        .filter((a) => a.username)
+        .map((a) => ({ platform: a.platform, username: a.username }));
+
+      const html = generateLandingHTML({
+        businessName: businessName || 'My Business',
+        businessDescription: businessDescription || '',
+        businessType: businessType || 'other',
+        photos,
+        socialLinks,
+      });
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const slug = (businessName || 'my-business')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${slug}-website.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Silent fail
+    }
+    setDownloading(false);
   };
 
   return (
@@ -88,6 +140,18 @@ export default function LandingPagePreview() {
         <Button variant="secondary" size="sm" className="flex-1 gap-1.5" onClick={handleShare}>
           <IoShareOutline className="w-3.5 h-3.5" />
           Share Link
+        </Button>
+      </div>
+      <div className="mt-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full gap-1.5 text-brown-light"
+          onClick={handleDownloadHtml}
+          loading={downloading}
+        >
+          <IoDownloadOutline className="w-3.5 h-3.5" />
+          {downloading ? 'Generating...' : 'Download as HTML'}
         </Button>
       </div>
     </Card>

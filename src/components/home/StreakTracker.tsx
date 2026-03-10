@@ -33,8 +33,8 @@ export default function StreakTracker() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 }}
     >
-      <Card padding="md">
-        <div className="flex items-center justify-between mb-3">
+      <Card padding="md" className="overflow-hidden">
+        <div className="flex items-center justify-between mb-3 min-w-0">
           {/* Flame + streak number */}
           <div className="flex items-center gap-2">
             <motion.span
@@ -64,7 +64,7 @@ export default function StreakTracker() {
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, type: 'spring', stiffness: 400, damping: 15 }}
-              className="flex items-center gap-1 bg-gold-50 border border-gold-200 rounded-full px-2.5 py-1"
+              className="flex items-center gap-1 bg-gold-50 border border-gold-200 rounded-full px-2.5 py-1 shrink-0"
             >
               <span className="text-xs">{milestone.icon}</span>
               <span className="text-[10px] font-semibold text-gold-400">{milestone.name}</span>
@@ -73,7 +73,7 @@ export default function StreakTracker() {
         </div>
 
         {/* Streak calendar — last 14 days */}
-        <div className="flex items-center gap-1 justify-between">
+        <div className="flex items-center gap-1 justify-between overflow-x-auto min-w-0">
           {calendar.map((day, i) => (
             <motion.div
               key={day.dateKey}
