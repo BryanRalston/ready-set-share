@@ -5,7 +5,7 @@ import { getPhotos, addPhoto, type LibraryPhoto } from './photo-library';
 export interface ExportData {
   version: string; // '1.0'
   exportedAt: string; // ISO date
-  appName: string; // 'PostCraft'
+  appName: string; // 'ReadySetShare'
   localStorage: Record<string, string>; // All biz-social-* keys
   photos: Array<{
     id: string;
@@ -46,7 +46,7 @@ export async function exportAllData(): Promise<ExportData> {
   return {
     version: '1.0',
     exportedAt: new Date().toISOString(),
-    appName: 'PostCraft',
+    appName: 'ReadySetShare',
     localStorage: localStorageData,
     photos: photos.map((p) => ({
       id: p.id,
@@ -183,7 +183,7 @@ export async function importData(
 
 /**
  * Trigger a file download of the full app data export.
- * Filename format: postcraft-backup-YYYY-MM-DD.json
+ * Filename format: readysetshare-backup-YYYY-MM-DD.json
  */
 export async function downloadExport(): Promise<void> {
   const data = await exportAllData();
@@ -195,7 +195,7 @@ export async function downloadExport(): Promise<void> {
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const dd = String(now.getDate()).padStart(2, '0');
-  const filename = `postcraft-backup-${yyyy}-${mm}-${dd}.json`;
+  const filename = `readysetshare-backup-${yyyy}-${mm}-${dd}.json`;
 
   const a = document.createElement('a');
   a.href = url;
@@ -227,7 +227,7 @@ export async function importFromFile(
       return {
         success: false,
         imported: { settings: false, drafts: 0, photos: 0, accounts: 0 },
-        error: 'Invalid JSON file. Please select a valid PostCraft backup.',
+        error: 'Invalid JSON file. Please select a valid Ready Set Share backup.',
       };
     }
 
@@ -235,7 +235,7 @@ export async function importFromFile(
       return {
         success: false,
         imported: { settings: false, drafts: 0, photos: 0, accounts: 0 },
-        error: 'This file is not a valid PostCraft backup. Missing required fields.',
+        error: 'This file is not a valid Ready Set Share backup. Missing required fields.',
       };
     }
 

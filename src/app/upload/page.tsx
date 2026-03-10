@@ -18,9 +18,74 @@ import { useUser } from '@/lib/user-context';
 import TemplatePicker from '@/components/upload/TemplatePicker';
 import { IoArrowBackOutline, IoMicOutline, IoCreateOutline, IoImagesOutline, IoCheckmarkCircle, IoListOutline, IoDocumentTextOutline } from 'react-icons/io5';
 import Image from 'next/image';
+import { useToast } from '@/components/ui/Toast';
 
 type UploadStep = 'choose' | 'library-picker' | 'analyzing' | 'results' | 'caption-choice' | 'caption-style' | 'template-picker';
 type CaptionMode = 'write' | 'voice' | null;
+
+/* ── Step progress helpers ── */
+
+function getStepSequence(aiConfigured: boolean): UploadStep[] {
+  if (aiConfigured) {
+    return ['choose', 'analyzing', 'caption-choice', 'results'];
+  }
+  return ['choose', 'caption-style', 'results'];
+}
+
+function getStepIndex(step: UploadStep, aiConfigured: boolean): number {
+  const seq = getStepSequence(aiConfigured);
+  if (step === 'library-picker') return 0;
+  if (step === 'template-picker') {
+    return aiConfigured ? seq.indexOf('caption-choice') : seq.indexOf('caption-style');
+  }
+  const idx = seq.indexOf(step);
+  return idx >= 0 ? idx : 0;
+}
+
+function StepIndicator({ step, aiConfigured }: { step: UploadStep; aiConfigured: boolean }) {
+  const seq = getStepSequence(aiConfigured);
+  const totalSteps = seq.length;
+  const currentIndex = getStepIndex(step, aiConfigured);
+
+  const labels = aiConfigured
+    ? ['Photo', 'Analyzing', 'Caption Style', 'Review']
+    : ['Photo', 'Caption Style', 'Review'];
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 mb-4">
+      {labels.map((label, i) => {
+        const isActive = i === currentIndex;
+        const isComplete = i < currentIndex;
+        return (
+          <div key={label} className="flex items-center gap-1.5">
+            {i > 0 && (
+              <div className={`w-6 h-0.5 rounded-full transition-colors duration-300 ${isComplete ? 'bg-sage-400' : 'bg-cream-200'}`} />
+            )}
+            <div className="flex flex-col items-center gap-0.5">
+              <div
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  isActive
+                    ? 'bg-sage-500 ring-2 ring-sage-200 ring-offset-1'
+                    : isComplete
+                    ? 'bg-sage-400'
+                    : 'bg-cream-200'
+                }`}
+              />
+              <span className={`text-[9px] transition-colors duration-300 ${
+                isActive ? 'text-sage-600 font-medium' : isComplete ? 'text-sage-400' : 'text-brown-light/50'
+              }`}>
+                {label}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+      <span className="ml-2 text-[10px] text-brown-light/60">
+        {currentIndex + 1}/{totalSteps}
+      </span>
+    </div>
+  );
+}
 
 export default function UploadPage() {
   return (
@@ -40,6 +105,7 @@ function UploadPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { businessType, businessName, businessDescription } = useUser();
+  const { toast } = useToast();
   const [step, setStep] = useState<UploadStep>('choose');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -74,7 +140,7 @@ function UploadPageInner() {
           : `data:image/jpeg;base64,${photo.base64}`;
         setPreviewUrl(dataUrl);
         setImageBase64(photo.base64);
-        setSavedToLibrary(true); // Already in library
+        setSavedToLibrary(true);
         if (isGeminiConfigured()) {
           runAnalysis(photo.base64);
         } else {
@@ -147,7 +213,6 @@ function UploadPageInner() {
     setPreviewUrl(url);
     setSavedToLibrary(false);
 
-    // Increment photo count for BrandKit
     try { incrementPhotoCount(); } catch { /* localStorage may fail */ }
 
     try {
@@ -193,7 +258,7 @@ function UploadPageInner() {
       : `data:image/jpeg;base64,${photo.base64}`;
     setPreviewUrl(dataUrl);
     setImageBase64(photo.base64);
-    setSavedToLibrary(true); // Already in library
+    setSavedToLibrary(true);
     if (isGeminiConfigured()) {
       runAnalysis(photo.base64);
     } else {
@@ -217,6 +282,7 @@ function UploadPageInner() {
         tags: [],
       });
       setSavedToLibrary(true);
+      toast('Saved to library', 'success');
     } catch (err) {
       console.error('Failed to save to library:', err);
     } finally {
@@ -293,28 +359,70 @@ function UploadPageInner() {
     setStep('results');
   };
 
-  const getBackAction = () => {
-    if (step === 'results' && aiConfigured) return () => { setStep('caption-choice'); setCaptionMode(null); };
-    if (step === 'results' && !aiConfigured) return () => { setStep('caption-style'); setCaptionMode(null); };
-    if (step === 'template-picker') return () => setStep('caption-style');
-    if (step === 'caption-style') return handleClear;
-    if (step === 'library-picker') return () => setStep('choose');
-    if (step === 'caption-choice') return handleClear;
-    return handleClear;
+  /* ── Simplified back-button logic ── */
+  const getBackAction = (): (() => void) => {
+    switch (step) {
+      case 'library-picker':
+        return () => setStep('choose');
+      case 'template-picker':
+        return () => setStep('caption-style');
+      case 'results':
+        return () => { setStep(aiConfigured ? 'caption-choice' : 'caption-style'); setCaptionMode(null); };
+      case 'caption-choice':
+      case 'caption-style':
+      case 'analyzing':
+        return handleClear;
+      default:
+        return handleClear;
+    }
   };
 
   const backAction = step !== 'choose' ? (
     <button
       onClick={getBackAction()}
+      aria-label="Go back"
       className="w-9 h-9 rounded-full bg-white border border-cream-200 flex items-center justify-center text-brown-light hover:text-sage-500 transition-colors"
     >
       <IoArrowBackOutline size={18} />
     </button>
   ) : undefined;
 
+  /* ── Save to Library: rendered once, shown on photo-selected steps ── */
+  const showSaveToLibrary = imageBase64 && !['choose', 'library-picker', 'analyzing'].includes(step);
+
+  const saveToLibraryButton = showSaveToLibrary && (
+    <>
+      {!savedToLibrary ? (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          onClick={handleSaveToLibrary}
+          disabled={savingToLibrary}
+          className="flex items-center justify-center gap-2 w-full mt-3 py-2 text-sm text-sage-500 hover:text-sage-600 transition-colors disabled:opacity-50"
+        >
+          <IoImagesOutline className="w-4 h-4" />
+          {savingToLibrary ? 'Saving...' : 'Save to Library'}
+        </motion.button>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center justify-center gap-1.5 mt-3 py-2 text-sm text-sage-500"
+        >
+          <IoCheckmarkCircle className="w-4 h-4" />
+          Saved to Library
+        </motion.div>
+      )}
+    </>
+  );
+
   return (
     <AppShell title="Upload Photo" rightAction={backAction} showNotifications={false}>
       <div className="space-y-6">
+        {/* Step progress indicator */}
+        <StepIndicator step={step} aiConfigured={aiConfigured} />
+
         <AnimatePresence mode="wait">
           {step === 'choose' && (
             <motion.div key="choose" exit={{ opacity: 0, y: -12 }}>
@@ -412,30 +520,7 @@ function UploadPageInner() {
                 />
               )}
 
-              {/* Save to Library button */}
-              {imageBase64 && !savedToLibrary && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  onClick={handleSaveToLibrary}
-                  disabled={savingToLibrary}
-                  className="flex items-center justify-center gap-2 w-full mt-3 py-2 text-sm text-sage-500 hover:text-sage-600 transition-colors disabled:opacity-50"
-                >
-                  <IoImagesOutline className="w-4 h-4" />
-                  {savingToLibrary ? 'Saving...' : 'Save to Library'}
-                </motion.button>
-              )}
-              {savedToLibrary && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center gap-1.5 mt-3 py-2 text-sm text-sage-500"
-                >
-                  <IoCheckmarkCircle className="w-4 h-4" />
-                  Saved to Library
-                </motion.div>
-              )}
+              {saveToLibraryButton}
 
               <div className="mt-6 space-y-3">
                 <p className="text-sm font-medium text-brown text-center">Choose your caption style</p>
@@ -489,30 +574,7 @@ function UploadPageInner() {
                 />
               )}
 
-              {/* Save to Library button */}
-              {imageBase64 && !savedToLibrary && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  onClick={handleSaveToLibrary}
-                  disabled={savingToLibrary}
-                  className="flex items-center justify-center gap-2 w-full mt-3 py-2 text-sm text-sage-500 hover:text-sage-600 transition-colors disabled:opacity-50"
-                >
-                  <IoImagesOutline className="w-4 h-4" />
-                  {savingToLibrary ? 'Saving...' : 'Save to Library'}
-                </motion.button>
-              )}
-              {savedToLibrary && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center gap-1.5 mt-3 py-2 text-sm text-sage-500"
-                >
-                  <IoCheckmarkCircle className="w-4 h-4" />
-                  Saved to Library
-                </motion.div>
-              )}
+              {saveToLibraryButton}
 
               <div className="mt-4">
                 <TemplatePicker
@@ -534,30 +596,7 @@ function UploadPageInner() {
                 />
               )}
 
-              {/* Save to Library button */}
-              {imageBase64 && !savedToLibrary && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  onClick={handleSaveToLibrary}
-                  disabled={savingToLibrary}
-                  className="flex items-center justify-center gap-2 w-full mt-3 py-2 text-sm text-sage-500 hover:text-sage-600 transition-colors disabled:opacity-50"
-                >
-                  <IoImagesOutline className="w-4 h-4" />
-                  {savingToLibrary ? 'Saving...' : 'Save to Library'}
-                </motion.button>
-              )}
-              {savedToLibrary && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center gap-1.5 mt-3 py-2 text-sm text-sage-500"
-                >
-                  <IoCheckmarkCircle className="w-4 h-4" />
-                  Saved to Library
-                </motion.div>
-              )}
+              {saveToLibraryButton}
 
               <div className="mt-6 space-y-3">
                 <p className="text-sm font-medium text-brown text-center">How do you want to caption this?</p>
@@ -588,7 +627,6 @@ function UploadPageInner() {
                   </motion.button>
                 </div>
 
-                {/* Template option for AI users */}
                 <motion.button
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -625,30 +663,7 @@ function UploadPageInner() {
                 />
               )}
 
-              {/* Save to Library button */}
-              {imageBase64 && !savedToLibrary && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  onClick={handleSaveToLibrary}
-                  disabled={savingToLibrary}
-                  className="flex items-center justify-center gap-2 w-full mt-3 py-2 text-sm text-sage-500 hover:text-sage-600 transition-colors disabled:opacity-50"
-                >
-                  <IoImagesOutline className="w-4 h-4" />
-                  {savingToLibrary ? 'Saving...' : 'Save to Library'}
-                </motion.button>
-              )}
-              {savedToLibrary && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center gap-1.5 mt-3 py-2 text-sm text-sage-500"
-                >
-                  <IoCheckmarkCircle className="w-4 h-4" />
-                  Saved to Library
-                </motion.div>
-              )}
+              {saveToLibraryButton}
 
               <div className="mt-6">
                 <AIAnalysis

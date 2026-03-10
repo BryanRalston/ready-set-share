@@ -92,7 +92,10 @@ export default function ApproveButton({
 
   // Pre-generate particle configs to avoid re-randomizing on re-render
   const particles = useMemo(() => {
-    const colors = ['#7C9A6E', '#D4A574', '#A8C5A0', '#8fb284', '#637b58', '#c48f58', '#F8E8D0'];
+    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+    const colors = isDark
+      ? ['#A8D89A', '#F0C87A', '#C5E0BD', '#B8D4AB', '#8FE088', '#FFD480', '#FFFDE0']
+      : ['#7C9A6E', '#D4A574', '#A8C5A0', '#8fb284', '#637b58', '#c48f58', '#F8E8D0'];
     const shapes: ParticleConfig['shape'][] = ['circle', 'square', 'diamond'];
     const configs: ParticleConfig[] = [];
 

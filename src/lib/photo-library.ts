@@ -8,7 +8,7 @@ export interface LibraryPhoto {
   createdAt: string;
 }
 
-const DB_NAME = 'postcraft-photos';
+const DB_NAME = 'readysetshare-photos';
 const DB_VERSION = 1;
 const STORE_NAME = 'photos';
 
@@ -38,7 +38,7 @@ function openDB(): Promise<IDBDatabase> {
       if (!dbWarningShown) {
         dbWarningShown = true;
         console.warn(
-          'PostCraft: IndexedDB is unavailable (possibly private browsing mode). Photo library features will not work.'
+          'ReadySetShare: IndexedDB is unavailable (possibly private browsing mode). Photo library features will not work.'
         );
       }
       reject(request.error);

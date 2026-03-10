@@ -85,7 +85,7 @@ export default function QRGenerator() {
     if (!qrDataUrl) return;
     const a = document.createElement('a');
     a.href = qrDataUrl;
-    a.download = `postcraft-qr-${selectedLink}.png`;
+    a.download = `readysetshare-qr-${selectedLink}.png`;
     a.click();
   };
 

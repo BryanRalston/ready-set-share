@@ -11,6 +11,8 @@ export default function DarkModeInit() {
     const stored = localStorage.getItem('biz-social-dark-mode');
     if (stored === 'true') {
       document.documentElement.classList.add('dark');
+    } else if (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
     }
   }, []);
 

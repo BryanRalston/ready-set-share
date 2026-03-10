@@ -108,7 +108,7 @@ export default function StoryCreator({ imageUrl }: StoryCreatorProps) {
     if (!canvas) return;
 
     const link = document.createElement('a');
-    link.download = 'postcraft-story.png';
+    link.download = 'readysetshare-story.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   };

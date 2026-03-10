@@ -113,7 +113,7 @@ export default function InstallPrompt() {
                   transition={{ delay: 0.4 }}
                   className="text-sm text-brown-light mt-1"
                 >
-                  Add PostCraft to your home screen
+                  Add Ready Set Share to your home screen
                 </motion.p>
               </div>
 
@@ -154,7 +154,7 @@ export default function InstallPrompt() {
                       step={2}
                       delay={0.6}
                       icon={<IoPhonePortraitOutline className="w-5 h-5" />}
-                      text="Find PostCraft on your home screen"
+                      text="Find Ready Set Share on your home screen"
                     />
                   </>
                 )}

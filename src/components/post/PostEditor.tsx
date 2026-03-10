@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import PostMockup from './PostMockup';
-import { IoCalendarOutline, IoAddOutline, IoCloseOutline, IoNotificationsOutline } from 'react-icons/io5';
+import { IoCalendarOutline, IoAddOutline, IoCloseOutline, IoNotificationsOutline, IoExpandOutline, IoContractOutline } from 'react-icons/io5';
 import { addReminder, requestNotificationPermission } from '@/lib/reminders';
 
 interface PostEditorProps {
@@ -40,6 +40,7 @@ export default function PostEditor({
   const [scheduleTime, setScheduleTime] = useState('');
   const [newTag, setNewTag] = useState('');
   const [showMockup, setShowMockup] = useState(true);
+  const [captionExpanded, setCaptionExpanded] = useState(false);
 
   const handleCaptionChange = (value: string) => {
     if (value.length <= MAX_CAPTION_LENGTH) {
@@ -108,10 +109,11 @@ export default function PostEditor({
 
   return (
     <div className="space-y-4">
-      {/* Mockup preview (collapsible) */}
+      {/* Mockup preview (collapsible, sticky) */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
+        className="sticky top-0 z-10"
       >
         <button
           onClick={() => setShowMockup(!showMockup)}
@@ -143,12 +145,22 @@ export default function PostEditor({
         <Card>
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-brown">Caption</label>
-            <span className={`text-xs ${charColor}`}>{charCount}/{MAX_CAPTION_LENGTH}</span>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs ${charColor}`}>{charCount}/{MAX_CAPTION_LENGTH}</span>
+              <button
+                type="button"
+                onClick={() => setCaptionExpanded(!captionExpanded)}
+                className="text-brown-light hover:text-sage-500 transition-colors"
+                aria-label={captionExpanded ? 'Collapse caption' : 'Expand caption'}
+              >
+                {captionExpanded ? <IoContractOutline className="w-4 h-4" /> : <IoExpandOutline className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           <textarea
             value={caption}
             onChange={(e) => handleCaptionChange(e.target.value)}
-            rows={4}
+            rows={captionExpanded ? 12 : 6}
             className="w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 focus:bg-white transition-all resize-none"
             placeholder="Write your caption..."
           />

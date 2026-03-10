@@ -1,7 +1,7 @@
-// PostCraft Service Worker
+// ReadySetShare Service Worker
 // Provides offline caching and notification support
 
-const CACHE_NAME = 'postcraft-v1';
+const CACHE_NAME = 'readysetshare-v1';
 
 // App shell files to cache for offline access
 const APP_SHELL = [
@@ -76,7 +76,7 @@ self.addEventListener('message', (event) => {
     self.registration.showNotification(title, {
       body: body || 'Your scheduled post is ready to go!',
       icon: icon || '/icons/icon-192.png',
-      tag: tag || 'postcraft-notification',
+      tag: tag || 'readysetshare-notification',
       badge: '/icons/icon-192.png',
       data: {
         url: '/',

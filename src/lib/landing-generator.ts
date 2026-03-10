@@ -384,7 +384,7 @@ export function generateLandingHTML(config: {
 
     <!-- Footer -->
     <footer class="footer">
-      <p>Made with <a href="https://postcraft.app" target="_blank" rel="noopener noreferrer">PostCraft</a></p>
+      <p>Made with <a href="https://readysetshare.app" target="_blank" rel="noopener noreferrer">Ready Set Share</a></p>
     </footer>
   </main>
 </body>

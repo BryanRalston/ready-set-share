@@ -51,7 +51,7 @@ export async function showSWNotification(
       type: 'SHOW_NOTIFICATION',
       title,
       body,
-      tag: tag || 'postcraft-notification',
+      tag: tag || 'readysetshare-notification',
       icon: '/icons/icon-192.png',
     });
     return;
@@ -62,7 +62,7 @@ export async function showSWNotification(
     new Notification(title, {
       body,
       icon: '/icons/icon-192.png',
-      tag: tag || 'postcraft-notification',
+      tag: tag || 'readysetshare-notification',
     });
   }
 }

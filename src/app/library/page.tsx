@@ -7,6 +7,7 @@ import AppShell from '@/components/layout/AppShell';
 import PhotoGrid from '@/components/library/PhotoGrid';
 import PhotoDetail from '@/components/library/PhotoDetail';
 import Button from '@/components/ui/Button';
+import { SkeletonPhotoCell } from '@/components/ui/Skeleton';
 import { getPhotos } from '@/lib/photo-library';
 import type { LibraryPhoto } from '@/lib/photo-library';
 import Link from 'next/link';
@@ -52,10 +53,11 @@ export default function LibraryPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-20"
+            className="grid grid-cols-3 gap-2"
           >
-            <div className="w-10 h-10 rounded-full border-2 border-sage-300 border-t-transparent animate-spin" />
-            <p className="mt-4 text-sm text-brown-light">Loading photos...</p>
+            {Array.from({ length: 9 }).map((_, i) => (
+              <SkeletonPhotoCell key={i} />
+            ))}
           </motion.div>
         )}
 

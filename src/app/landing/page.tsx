@@ -247,7 +247,7 @@ export default function LandingPage() {
         <FadeInOnScroll>
           <div className="text-center py-6 border-t border-cream-200">
             <p className="text-[10px] text-brown-light/60">
-              Made with PostCraft
+              Made with Ready Set Share
             </p>
           </div>
         </FadeInOnScroll>

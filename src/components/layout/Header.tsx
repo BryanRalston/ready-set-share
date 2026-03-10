@@ -9,7 +9,7 @@ interface HeaderProps {
   rightAction?: React.ReactNode;
 }
 
-export default function Header({ title = 'PostCraft', showNotifications = true, rightAction }: HeaderProps) {
+export default function Header({ title = 'Ready Set Share', showNotifications = true, rightAction }: HeaderProps) {
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}

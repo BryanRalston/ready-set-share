@@ -10,9 +10,11 @@ import { useUser } from '@/lib/user-context';
 import { generateLandingHTML } from '@/lib/landing-generator';
 import { getPhotos } from '@/lib/photo-library';
 import { getConnectedAccounts } from '@/lib/social-accounts';
+import { useToast } from '@/components/ui/Toast';
 
 export default function LandingPagePreview() {
   const { businessName, businessDescription, businessType } = useUser();
+  const { toast } = useToast();
   const shareTitle = businessName || 'My Business';
   const shareText = businessDescription || 'Check out our quality products!';
   const [downloading, setDownloading] = useState(false);
@@ -31,7 +33,7 @@ export default function LandingPagePreview() {
       }
     } else {
       await navigator.clipboard.writeText(url);
-      alert('Link copied!');
+      toast('Link copied!', 'success');
     }
   };
 

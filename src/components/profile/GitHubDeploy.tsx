@@ -278,7 +278,7 @@ export default function GitHubDeploy() {
                       <li>
                         Go to{' '}
                         <a
-                          href="https://github.com/settings/tokens/new?scopes=repo&description=PostCraft%20Website%20Deploy"
+                          href="https://github.com/settings/tokens/new?scopes=repo&description=ReadySetShare%20Website%20Deploy"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sage-500 underline font-medium"

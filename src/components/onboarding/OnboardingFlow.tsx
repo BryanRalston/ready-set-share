@@ -134,7 +134,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       </div>
 
       <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-3">
-        Welcome to PostCraft!
+        Welcome to Ready Set Share!
       </h2>
       <p className="text-sm text-brown-light leading-relaxed">
         Your AI-powered social media assistant for small business.

@@ -278,7 +278,7 @@ export default function CalendarPage() {
                 No posts scheduled yet
               </h3>
               <p className="text-sm text-brown-light mb-4 max-w-[260px] mx-auto">
-                Upload a photo to get started!
+                Schedule your first post to see it here!
               </p>
               <Link href="/upload">
                 <Button size="md">Upload a Photo</Button>

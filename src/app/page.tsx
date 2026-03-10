@@ -13,6 +13,7 @@ import {
   IoCalendarOutline,
   IoImageOutline,
   IoCameraOutline,
+  IoChevronDownOutline,
 } from 'react-icons/io5';
 import Link from 'next/link';
 import NudgeCard from '@/components/home/NudgeCard';
@@ -28,6 +29,7 @@ import { getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
 import { checkWeekRollover } from '@/lib/goals';
 import GoalTracker from '@/components/home/GoalTracker';
 import PerformancePrompt from '@/components/home/PerformancePrompt';
+import { SkeletonStatCard, SkeletonPostCard } from '@/components/ui/Skeleton';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -48,6 +50,9 @@ export default function HomePage() {
   const [streak, setStreak] = useState(0);
   const [scheduledCount, setScheduledCount] = useState(0);
   const [upcomingReminders, setUpcomingReminders] = useState<Reminder[]>([]);
+  const [tipsOpen, setTipsOpen] = useState(false);
+  const [remindersOpen, setRemindersOpen] = useState(false);
+  const [homeLoading, setHomeLoading] = useState(true);
 
   useEffect(() => {
     const allDrafts = getDrafts();
@@ -55,21 +60,25 @@ export default function HomePage() {
     setPostCount(getPostCount());
     setStreak(getCurrentStreak());
     setScheduledCount(allDrafts.filter(d => d.scheduledFor).length);
-    setUpcomingReminders(getUpcomingReminders(3));
+    const reminders = getUpcomingReminders(3);
+    setUpcomingReminders(reminders);
+    // Auto-expand reminders section if there are upcoming reminders
+    if (reminders.length > 0) {
+      setRemindersOpen(true);
+    }
     // Fire any overdue notifications on mount
     checkAndFireReminders();
     // Handle weekly goal rollover
     checkWeekRollover();
+    setHomeLoading(false);
   }, []);
 
   const hasPosts = drafts.length > 0;
+  const hasPublishedPosts = postCount > 0;
 
   return (
     <AppShell>
       <div className="space-y-6">
-        {/* Nudge card — top of page */}
-        <NudgeCard />
-
         {/* Welcome */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -86,54 +95,63 @@ export default function HomePage() {
           </p>
         </motion.div>
 
-        {/* Quick stats row */}
+        {/* 1. Quick stats row */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="grid grid-cols-3 gap-3"
         >
-          <Card padding="sm" className="text-center">
-            <IoImageOutline className="w-5 h-5 text-sage-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">{postCount}</p>
-            <p className="text-[10px] text-brown-light">Posts</p>
-          </Card>
-          <Card padding="sm" className="text-center">
-            <IoFlameOutline className="w-5 h-5 text-gold-300 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">{streak}</p>
-            <p className="text-[10px] text-brown-light">Day Streak</p>
-          </Card>
-          <Card padding="sm" className="text-center">
-            <IoCalendarOutline className="w-5 h-5 text-sage-400 mx-auto mb-1" />
-            <p className="text-lg font-bold text-brown">{scheduledCount}</p>
-            <p className="text-[10px] text-brown-light">Scheduled</p>
-          </Card>
+          {homeLoading ? (
+            <>
+              <SkeletonStatCard />
+              <SkeletonStatCard />
+              <SkeletonStatCard />
+            </>
+          ) : (
+            <>
+              <Card padding="sm" className="text-center">
+                <IoImageOutline className="w-5 h-5 text-sage-500 mx-auto mb-1" />
+                <p className="text-lg font-bold text-brown">{postCount}</p>
+                <p className="text-[10px] text-brown-light">Posts</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <IoFlameOutline className="w-5 h-5 text-gold-300 mx-auto mb-1" />
+                <p className="text-lg font-bold text-brown">{streak}</p>
+                <p className="text-[10px] text-brown-light">Day Streak</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <IoCalendarOutline className="w-5 h-5 text-sage-400 mx-auto mb-1" />
+                <p className="text-lg font-bold text-brown">{scheduledCount}</p>
+                <p className="text-[10px] text-brown-light">Scheduled</p>
+              </Card>
+            </>
+          )}
         </motion.div>
 
-        {/* Streak tracker */}
+        {/* 2. Streak tracker */}
         <StreakTracker />
 
-        {/* Weekly goal tracker */}
+        {/* 3. Weekly goal tracker */}
         <GoalTracker />
 
-        {/* Performance prompt for unlogged posts */}
-        <PerformancePrompt />
+        {/* 4. NudgeCard — single CTA based on what user hasn't done yet */}
+        <NudgeCard />
 
-        {/* Content idea */}
-        <ContentIdea />
-
-        {/* Upcoming reminders */}
-        <UpcomingReminders reminders={upcomingReminders} />
-
-        {/* Content area */}
-        {!hasPosts ? (
+        {/* 5. Posts list (upcoming/drafts) */}
+        {homeLoading ? (
+          <div className="space-y-3">
+            <SkeletonPostCard />
+            <SkeletonPostCard />
+            <SkeletonPostCard />
+          </div>
+        ) : !hasPosts ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             <Card padding="lg" className="text-center">
-              {/* Empty state icon */}
               <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                 <motion.div
                   animate={{ y: [0, -6, 0], scale: [1, 1.05, 1] }}
@@ -149,7 +167,6 @@ export default function HomePage() {
               <p className="text-sm text-brown-light mb-5 max-w-[260px] mx-auto">
                 Upload your first photo and watch the magic happen
               </p>
-              {/* Arrow pointing down toward upload button */}
               <motion.div
                 animate={{ y: [0, 6, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
@@ -213,36 +230,87 @@ export default function HomePage() {
         {/* Saved Drafts */}
         <DraftsList />
 
-        {/* Tips card */}
+        {/* 6. Performance prompt — only if they have published posts */}
+        {hasPublishedPosts && <PerformancePrompt />}
+
+        {/* 7. Content idea */}
+        <ContentIdea />
+
+        {/* 8. Upcoming reminders — collapsible, auto-expanded when non-empty */}
+        {upcomingReminders.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <button
+              onClick={() => setRemindersOpen(!remindersOpen)}
+              className="flex items-center gap-2 w-full text-left mb-2"
+            >
+              <IoCalendarOutline className="w-4 h-4 text-gold-300" />
+              <h3 className="font-semibold text-brown text-sm flex-1">
+                Upcoming Reminders ({upcomingReminders.length})
+              </h3>
+              <motion.div
+                animate={{ rotate: remindersOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <IoChevronDownOutline className="w-4 h-4 text-brown-light" />
+              </motion.div>
+            </button>
+            {remindersOpen && (
+              <UpcomingReminders reminders={upcomingReminders} />
+            )}
+          </motion.div>
+        )}
+
+        {/* 9. Tips card — collapsed by default */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card className="bg-sage-50 border-sage-200">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-sage-100 flex items-center justify-center shrink-0 mt-0.5">
-                <IoSparklesOutline className="w-4 h-4 text-sage-600" />
+          <button
+            onClick={() => setTipsOpen(!tipsOpen)}
+            className="w-full text-left"
+          >
+            <Card className="bg-sage-50 border-sage-200">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-sage-100 flex items-center justify-center shrink-0">
+                  <IoSparklesOutline className="w-4 h-4 text-sage-600" />
+                </div>
+                <h4 className="text-sm font-semibold text-sage-700 flex-1 text-left">Tip of the day</h4>
+                <motion.div
+                  animate={{ rotate: tipsOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <IoChevronDownOutline className="w-4 h-4 text-sage-400" />
+                </motion.div>
               </div>
-              <div>
-                <h4 className="text-sm font-semibold text-sage-700 mb-0.5">Tip of the day</h4>
-                <p className="text-xs text-sage-600 leading-relaxed">
+              {tipsOpen && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="text-xs text-sage-600 leading-relaxed mt-2 pl-11 text-left"
+                >
                   Photos with natural lighting and a clean background get 40% more engagement on Instagram. Try shooting near a window!
-                </p>
-              </div>
-            </div>
-          </Card>
+                </motion.p>
+              )}
+            </Card>
+          </button>
         </motion.div>
       </div>
 
-      {/* FAB */}
-      <Link href="/upload">
+      {/* FAB — prominent with proper aria-label */}
+      <Link href="/upload" aria-label="Upload a new photo">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.6, type: 'spring', stiffness: 300, damping: 20 }}
           whileTap={{ scale: 0.9 }}
           whileHover={{ scale: 1.05 }}
+          role="button"
+          aria-label="Upload a new photo"
           className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-sage-500 text-white shadow-lg shadow-sage-500/30 flex items-center justify-center z-20 sm:right-[calc(50%-224px+16px)]"
         >
           <IoAddOutline className="w-7 h-7" />

@@ -4,26 +4,27 @@ import { UserProvider } from "@/lib/user-context";
 import DarkModeInit from "@/components/layout/DarkModeInit";
 import InstallPrompt from "@/components/layout/InstallPrompt";
 import ServiceWorkerRegistrar from "@/components/layout/ServiceWorkerRegistrar";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
-  title: "PostCraft",
+  title: "Ready Set Share",
   description: "Your AI-powered social media assistant for small business",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "PostCraft",
+    title: "Ready Set Share",
   },
   openGraph: {
-    title: "PostCraft",
+    title: "Ready Set Share",
     description: "AI-powered social media for your small business. Upload a photo, get captions, hashtags, and a posting schedule.",
-    siteName: "PostCraft",
+    siteName: "Ready Set Share",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "PostCraft",
+    title: "Ready Set Share",
     description: "AI-powered social media for your small business",
   },
 };
@@ -55,8 +56,10 @@ export default function RootLayout({
         <DarkModeInit />
         <ServiceWorkerRegistrar />
         <UserProvider>
-          {children}
-          <InstallPrompt />
+          <ToastProvider>
+            {children}
+            <InstallPrompt />
+          </ToastProvider>
         </UserProvider>
       </body>
     </html>

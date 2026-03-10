@@ -5,9 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { IoShareOutline } from 'react-icons/io5';
+import { useToast } from '@/components/ui/Toast';
 
 export default function ShareCard() {
   const [flipped, setFlipped] = useState(false);
+  const { toast } = useToast();
 
   const generateShareImage = useCallback((): Promise<Blob | null> => {
     return new Promise((resolve) => {
@@ -33,7 +35,7 @@ export default function ShareCard() {
       // Title
       ctx.fillStyle = '#FFFCF7';
       ctx.font = 'bold 56px serif';
-      ctx.fillText('PostCraft', 600, 320);
+      ctx.fillText('Ready Set Share', 600, 320);
 
       // Subtitle
       ctx.font = '28px sans-serif';
@@ -43,7 +45,7 @@ export default function ShareCard() {
       // URL
       ctx.font = '22px sans-serif';
       ctx.fillStyle = '#FFFCF770';
-      ctx.fillText('postcraft.app', 600, 560);
+      ctx.fillText('readysetshare.app', 600, 560);
 
       canvas.toBlob((blob) => resolve(blob), 'image/png');
     });
@@ -58,10 +60,10 @@ export default function ShareCard() {
       try {
         const blob = await generateShareImage();
         if (blob) {
-          const file = new File([blob], 'postcraft-share.png', { type: 'image/png' });
+          const file = new File([blob], 'readysetshare-share.png', { type: 'image/png' });
           if (navigator.canShare?.({ files: [file] })) {
             await navigator.share({
-              title: 'PostCraft',
+              title: 'Ready Set Share',
               text: 'AI-powered content management for small businesses',
               url,
               files: [file],
@@ -70,7 +72,7 @@ export default function ShareCard() {
           }
         }
         await navigator.share({
-          title: 'PostCraft',
+          title: 'Ready Set Share',
           text: 'AI-powered content management for small businesses',
           url,
         });
@@ -79,7 +81,7 @@ export default function ShareCard() {
       }
     } else {
       await navigator.clipboard.writeText(url);
-      alert('Link copied!');
+      toast('Link copied!', 'success');
     }
   };
 
@@ -96,7 +98,7 @@ export default function ShareCard() {
             <Card>
               <div className="text-center py-2">
                 <div className="text-3xl mb-2">📱✨</div>
-                <h3 className="text-sm font-semibold text-brown mb-1">Share PostCraft</h3>
+                <h3 className="text-sm font-semibold text-brown mb-1">Share Ready Set Share</h3>
                 <p className="text-[10px] text-brown-light mb-3">
                   Know a small business owner? Share the love!
                 </p>
@@ -124,7 +126,7 @@ export default function ShareCard() {
               <div className="bg-gradient-to-r from-sage-500 to-sage-300 rounded-xl p-4 text-center">
                 <div className="text-3xl mb-2">📱✨</div>
                 <h3 className="text-white font-bold text-lg font-[family-name:var(--font-heading)]">
-                  PostCraft
+                  Ready Set Share
                 </h3>
                 <p className="text-sage-100 text-[10px] mt-1">
                   AI-powered content management for small businesses

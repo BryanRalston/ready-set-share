@@ -82,7 +82,7 @@ export default function MonthlyRecap() {
     // Footer
     ctx.fillStyle = '#FFFCF770';
     ctx.font = '22px sans-serif';
-    ctx.fillText('Made with PostCraft', 540, 1020);
+    ctx.fillText('Made with Ready Set Share', 540, 1020);
 
     // Share or download
     canvas.toBlob(async (blob) => {

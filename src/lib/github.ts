@@ -99,7 +99,7 @@ export async function createRepo(token: string, repoName: string): Promise<{ suc
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: repoName,
-        description: 'My business website - powered by PostCraft',
+        description: 'My business website - powered by Ready Set Share',
         homepage: `https://${user.login}.github.io/${repoName}`,
         private: false,
         auto_init: true, // Creates with a README so we have a branch
@@ -196,7 +196,7 @@ export async function deployToGitHubPages(
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // 3. Push index.html
-    const pushed = await pushFile(token, owner, repoName, 'index.html', htmlContent, 'Update site via PostCraft');
+    const pushed = await pushFile(token, owner, repoName, 'index.html', htmlContent, 'Update site via Ready Set Share');
     if (!pushed) return { success: false, error: 'Could not push files to repository.' };
 
     // 4. Enable GitHub Pages

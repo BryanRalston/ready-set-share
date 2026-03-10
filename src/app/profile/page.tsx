@@ -36,6 +36,8 @@ import DataManagement from '@/components/profile/DataManagement';
 import QRGenerator from '@/components/profile/QRGenerator';
 import ShareCard from '@/components/social/ShareCard';
 import { BUSINESS_TYPES, getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
+import { useToast } from '@/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
 
 const DARK_MODE_KEY = 'biz-social-dark-mode';
 
@@ -53,7 +55,10 @@ const fadeUp = {
 
 export default function ProfilePage() {
   const { displayName, geminiApiKey, updatePreferences, clearPreferences, createdAt, businessType, businessName, businessDescription } = useUser();
+  const { toast } = useToast();
   const [darkMode, setDarkMode] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [showRemoveApiKeyModal, setShowRemoveApiKeyModal] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(displayName);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -117,6 +122,7 @@ export default function ProfilePage() {
   const handleSaveName = () => {
     if (nameInput.trim()) {
       updatePreferences({ displayName: nameInput.trim() });
+      toast('Settings saved', 'success');
     }
     setEditingName(false);
   };
@@ -124,6 +130,7 @@ export default function ProfilePage() {
   const handleSaveBusinessName = () => {
     if (businessNameInput.trim()) {
       updatePreferences({ businessName: businessNameInput.trim(), displayName: businessNameInput.trim() });
+      toast('Settings saved', 'success');
     }
     setEditingBusinessName(false);
   };
@@ -131,6 +138,7 @@ export default function ProfilePage() {
   const handleSaveBusinessDesc = () => {
     updatePreferences({ businessDescription: businessDescInput.trim() });
     setEditingBusinessDesc(false);
+    toast('Settings saved', 'success');
   };
 
   const handleSelectBusinessType = (type: string) => {
@@ -139,24 +147,28 @@ export default function ProfilePage() {
   };
 
   const handleSaveApiKey = () => {
-    // Warn if user is clearing an existing API key
     if (!apiKeyInput.trim() && geminiApiKey) {
-      const confirmed = window.confirm(
-        'Removing your API key will disable AI-generated captions. You\'ll get basic suggestions instead. Continue?'
-      );
-      if (!confirmed) return;
+      setShowRemoveApiKeyModal(true);
+      return;
     }
     updatePreferences({ geminiApiKey: apiKeyInput.trim() });
     setEditingApiKey(false);
+    toast('Settings saved', 'success');
+  };
+
+  const handleConfirmRemoveApiKey = () => {
+    updatePreferences({ geminiApiKey: '' });
+    setEditingApiKey(false);
+    setShowRemoveApiKeyModal(false);
+    toast('API key removed', 'info');
   };
 
   const handleResetApp = () => {
-    if (window.confirm('This will clear all your preferences, brand kit, and saved data. Continue?')) {
-      clearPreferences();
-      localStorage.removeItem(DARK_MODE_KEY);
-      document.documentElement.classList.remove('dark');
-      setDarkMode(false);
-    }
+    clearPreferences();
+    localStorage.removeItem(DARK_MODE_KEY);
+    document.documentElement.classList.remove('dark');
+    setDarkMode(false);
+    setShowResetModal(false);
   };
 
   const initials = displayName.slice(0, 2).toUpperCase();
@@ -483,13 +495,78 @@ export default function ProfilePage() {
           <Button
             variant="ghost"
             className="w-full gap-2 text-brown-light hover:text-red-500"
-            onClick={handleResetApp}
+            onClick={() => setShowResetModal(true)}
           >
             <IoTrashOutline className="w-4 h-4" />
             Reset App Data
           </Button>
         </motion.div>
       </motion.div>
+
+      {/* Reset Confirmation Modal */}
+      <Modal
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        title="Reset App Data"
+      >
+        <div className="text-center pb-2">
+          <p className="text-sm text-brown mb-1">Are you sure?</p>
+          <p className="text-xs text-brown-light mb-6">
+            This will clear all your preferences, brand kit, and saved data. This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              size="md"
+              className="flex-1"
+              onClick={() => setShowResetModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              className="flex-1 gap-1.5"
+              onClick={handleResetApp}
+            >
+              <IoTrashOutline className="w-4 h-4" />
+              Reset Everything
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Remove API Key Confirmation Modal */}
+      <Modal
+        isOpen={showRemoveApiKeyModal}
+        onClose={() => setShowRemoveApiKeyModal(false)}
+        title="Remove API Key"
+      >
+        <div className="text-center pb-2">
+          <p className="text-sm text-brown mb-1">Remove your API key?</p>
+          <p className="text-xs text-brown-light mb-6">
+            This will disable AI-generated captions. You&apos;ll get basic suggestions instead.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              size="md"
+              className="flex-1"
+              onClick={() => setShowRemoveApiKeyModal(false)}
+            >
+              Keep It
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              className="flex-1"
+              onClick={handleConfirmRemoveApiKey}
+            >
+              Remove
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </AppShell>
   );
 }
