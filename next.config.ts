@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
+const isGitHubPages = process.env.GITHUB_PAGES === '1';
+
 const nextConfig: NextConfig = {
   output: 'export',
+  basePath: isGitHubPages ? '/ready-set-share' : '',
+  assetPrefix: isGitHubPages ? '/ready-set-share/' : '',
   images: {
     unoptimized: true,
   },
