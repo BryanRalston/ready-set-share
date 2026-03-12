@@ -193,6 +193,7 @@ export default function VoiceCaption({ onCaptionGenerated }: VoiceCaptionProps) 
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 300, damping: 15 }}
               onClick={isRecording ? stopRecording : startRecording}
+              aria-label={isRecording ? 'Stop recording' : 'Start voice recording'}
               className={`relative z-10 w-16 h-16 rounded-full flex items-center justify-center shadow-md transition-colors ${
                 isRecording
                   ? 'bg-red-500 text-white shadow-red-500/30'

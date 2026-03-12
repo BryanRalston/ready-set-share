@@ -181,8 +181,9 @@ export default function StoryCreator({ imageUrl }: StoryCreatorProps) {
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
                   placeholder="Your custom text..."
+                  aria-label="Custom overlay text"
                   maxLength={40}
-                  className="mt-2 w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-2.5 text-sm text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300"
+                  className="mt-2 w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-2.5 text-sm text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300"
                 />
               </motion.div>
             )}

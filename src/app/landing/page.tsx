@@ -92,8 +92,8 @@ export default function LandingPage() {
   // Determine hero subtitle vs. about text
   // If the business description is long (>60 chars), use it in About and a shorter tagline in the hero.
   // If short or absent, keep it in the hero and show a generic expanded description in About.
-  const defaultTagline = 'Quality products crafted with care.';
-  const defaultAbout = 'Every piece is thoughtfully crafted with quality materials and attention to detail. We take pride in creating products that bring joy to our customers.';
+  const defaultTagline = 'Welcome — we\'re glad you\'re here.';
+  const defaultAbout = 'We take pride in what we do. Explore our work and reach out anytime.';
 
   const hasLongDescription = businessDescription && businessDescription.length > 60;
   const heroSubtitle = hasLongDescription ? defaultTagline : (businessDescription || defaultTagline);
@@ -208,37 +208,47 @@ export default function LandingPage() {
           </div>
         )}
 
-        {/* Contact / Social Links — only show if there are connected accounts with usernames */}
-        {mounted && socialAccounts.filter(a => a.username).length > 0 && (
+        {/* Contact / Social Links */}
+        {mounted && (
           <FadeInOnScroll>
             <div className="text-center space-y-3 mb-10">
               <h2 className="text-xl font-bold text-brown font-[family-name:var(--font-heading)]">
                 Get In Touch
               </h2>
-              <p className="text-sm text-brown-light">
-                Custom orders welcome! Reach out on social media.
-              </p>
-              <div className="flex items-center justify-center gap-3 flex-wrap">
-                {socialAccounts.map((account) => {
-                  const config = PLATFORM_CONFIG[account.platform];
-                  if (!config || !account.username) return null;
-                  const Icon = config.icon;
-                  const href = `${config.urlPrefix}${account.username}`;
-                  return (
-                    <motion.a
-                      key={account.platform}
-                      whileTap={{ scale: 0.95 }}
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-center gap-2 ${config.color} text-white rounded-full px-5 py-2.5 text-sm font-medium shadow-sm`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {config.label}
-                    </motion.a>
-                  );
-                })}
-              </div>
+              {socialAccounts.filter(a => a.username).length > 0 ? (
+                <>
+                  <p className="text-sm text-brown-light">
+                    Custom orders welcome! Reach out on social media.
+                  </p>
+                  <div className="flex items-center justify-center gap-3 flex-wrap">
+                    {socialAccounts.map((account) => {
+                      const config = PLATFORM_CONFIG[account.platform];
+                      if (!config || !account.username) return null;
+                      const Icon = config.icon;
+                      const href = `${config.urlPrefix}${account.username}`;
+                      return (
+                        <motion.a
+                          key={account.platform}
+                          whileTap={{ scale: 0.95 }}
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-2 ${config.color} text-white rounded-full px-5 py-2.5 text-sm font-medium shadow-sm`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {config.label}
+                        </motion.a>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-brown-light">
+                  Connect your social accounts in{' '}
+                  <a href="/profile" className="text-sage-500 underline underline-offset-2">Profile</a>
+                  {' '}to show them here.
+                </p>
+              )}
             </div>
           </FadeInOnScroll>
         )}

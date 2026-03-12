@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppShell from '@/components/layout/AppShell';
 import PhotoUploader from '@/components/upload/PhotoUploader';
-import AIAnalysis, { AnalysisResult } from '@/components/upload/AIAnalysis';
+import AIAnalysis, { AnalysisResult, CaptionOption } from '@/components/upload/AIAnalysis';
 import VoiceCaption from '@/components/upload/VoiceCaption';
 import { fileToBase64 } from '@/lib/utils';
 import { incrementPhotoCount } from '@/components/profile/BrandKit';
@@ -112,6 +112,7 @@ function UploadPageInner() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [captionMode, setCaptionMode] = useState<CaptionMode>(null);
+  const [selectedCaption, setSelectedCaption] = useState<string | null>(null);
   const aiConfigured = isGeminiConfigured();
 
   // Library picker state
@@ -189,20 +190,27 @@ function UploadPageInner() {
         platform: geminiResult.platform,
         tip: geminiResult.tip,
         postType: 'Single Post',
+        captionOptions: geminiResult.captionOptions,
       };
 
       setAnalysisResult(parsed);
       setStep('caption-choice');
     } catch {
       const name = businessName || 'our shop';
+      const fallbackOptions: CaptionOption[] = [
+        { label: 'Warm & Friendly', caption: `Check out our latest creation! Made with love at ${name}. We can't wait to hear what you think! 💛` },
+        { label: 'Professional', caption: `Introducing our newest offering — crafted with precision and care at ${name}. Quality you can see and feel.` },
+        { label: 'Fun & Catchy', caption: `Stop scrolling — you NEED to see this! 🔥 Fresh out of the ${name} workshop and ready for you!` },
+      ];
       setAnalysisResult({
-        caption: `Check out our latest creation! Made with love at ${name}.`,
+        caption: fallbackOptions[0].caption,
         hashtags: ['#handmade', '#smallbusiness', '#shopsmall', '#madewithcare', '#supportsmall', '#handcrafted', '#shoplocal', '#makersofinstagram'],
         platform: 'Instagram',
         tip: aiConfigured
           ? 'Post between 11am-1pm for best engagement. Use stories to show the making process!'
           : 'Basic suggestion — set up AI in Settings for personalized captions',
         postType: 'Single Post',
+        captionOptions: fallbackOptions,
       });
       setStep('caption-choice');
     }
@@ -225,14 +233,20 @@ function UploadPageInner() {
       }
     } catch {
       const name = businessName || 'our shop';
+      const fallbackOptions: CaptionOption[] = [
+        { label: 'Warm & Friendly', caption: `Check out our latest creation! Made with love at ${name}. We can't wait to hear what you think! 💛` },
+        { label: 'Professional', caption: `Introducing our newest offering — crafted with precision and care at ${name}. Quality you can see and feel.` },
+        { label: 'Fun & Catchy', caption: `Stop scrolling — you NEED to see this! 🔥 Fresh out of the ${name} workshop and ready for you!` },
+      ];
       setAnalysisResult({
-        caption: `Check out our latest creation! Made with love at ${name}.`,
+        caption: fallbackOptions[0].caption,
         hashtags: ['#handmade', '#smallbusiness', '#shopsmall', '#madewithcare', '#supportsmall', '#handcrafted', '#shoplocal', '#makersofinstagram'],
         platform: 'Instagram',
         tip: aiConfigured
           ? 'Post between 11am-1pm for best engagement. Use stories to show the making process!'
           : 'Basic suggestion — set up AI in Settings for personalized captions',
         postType: 'Single Post',
+        captionOptions: fallbackOptions,
       });
       setStep('caption-choice');
     }
@@ -298,6 +312,7 @@ function UploadPageInner() {
     setStep('choose');
     setUploadProgress(0);
     setCaptionMode(null);
+    setSelectedCaption(null);
     setSavedToLibrary(false);
   };
 
@@ -314,10 +329,14 @@ function UploadPageInner() {
     setStep('results');
   };
 
+  const handleCaptionSelected = (caption: string) => {
+    setSelectedCaption(caption);
+  };
+
   const handleCreatePost = () => {
     if (analysisResult) {
       const pendingPost = {
-        caption: analysisResult.caption,
+        caption: selectedCaption || analysisResult.caption,
         hashtags: analysisResult.hashtags,
         platform: analysisResult.platform,
         tip: analysisResult.tip,
@@ -670,6 +689,7 @@ function UploadPageInner() {
                   result={analysisResult}
                   onCreatePost={handleCreatePost}
                   onSaveForLater={handleSaveForLater}
+                  onCaptionSelected={handleCaptionSelected}
                 />
               </div>
             </motion.div>

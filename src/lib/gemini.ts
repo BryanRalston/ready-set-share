@@ -34,11 +34,17 @@ export interface BusinessContext {
   description: string;
 }
 
+export interface CaptionOption {
+  label: string;
+  caption: string;
+}
+
 export interface AnalysisResult {
   caption: string;
   hashtags: string[];
   platform: string;
   tip: string;
+  captionOptions: CaptionOption[];
   altCaptions?: string[];
 }
 
@@ -54,13 +60,16 @@ function buildSystemPrompt(
   let systemPrompt = `You are a social media expert helping small businesses grow their online presence. The user runs a ${businessContext.type || 'small'} business called '${businessContext.name || 'My Business'}'.${descriptionClause} Analyze their product photo and create an engaging social media post.
 
 When given a photo, respond with a JSON object containing:
-- caption: An engaging, warm social media caption (2-3 sentences)
+- captionOptions: Array of exactly 3 caption objects, each with "label" and "caption" fields:
+  1. { "label": "Warm & Friendly", "caption": "..." } — conversational tone, emoji-friendly, feels like talking to a friend
+  2. { "label": "Professional", "caption": "..." } — polished and brand-focused, confident and authoritative
+  3. { "label": "Fun & Catchy", "caption": "..." } — playful, hook-oriented, attention-grabbing
+- caption: Set this to the same value as the first captionOption's caption (Warm & Friendly)
 - hashtags: Array of 8-12 relevant hashtags (without the # symbol)
 - platform: The best platform for this type of post ("Instagram" or "Pinterest")
 - tip: A brief posting tip for this specific content
-- altCaptions: Array of 2 alternative caption styles (casual, professional)
 
-Keep the tone warm, authentic, and enthusiastic. Use language that connects with the small business and handmade community.
+Each caption should be 2-3 sentences. Keep the tone authentic and enthusiastic. Use language that connects with the small business and handmade community.
 Focus on the craftsmanship, quality, and appeal of the product.`;
 
   if (voiceProfile) {
@@ -89,15 +98,19 @@ function buildFallbackResult(businessContext: BusinessContext): AnalysisResult {
     'madewithcare',
   ];
 
+  const fallbackOptions: CaptionOption[] = [
+    { label: 'Warm & Friendly', caption: `Check out our latest creation! Made with love at ${businessName}. We can't wait to hear what you think! 💛` },
+    { label: 'Professional', caption: `Introducing our newest offering — crafted with precision and care at ${businessName}. Quality you can see and feel.` },
+    { label: 'Fun & Catchy', caption: `Stop scrolling — you NEED to see this! 🔥 Fresh out of the ${businessName} workshop and ready for you!` },
+  ];
+
   return {
-    caption: `Check out our latest creation! Made with love at ${businessName}.`,
+    caption: fallbackOptions[0].caption,
     hashtags: fallbackHashtags,
     platform: 'Instagram',
     tip: 'Set up your AI key in Settings to get personalized captions!',
-    altCaptions: [
-      `Just finished this beauty! What do you think? - ${businessName}`,
-      `Our latest product, crafted with care and attention to detail.`,
-    ],
+    captionOptions: fallbackOptions,
+    altCaptions: fallbackOptions.slice(1).map(o => o.caption),
   };
 }
 
@@ -132,12 +145,33 @@ export async function analyzeProductPhoto(
     if (!jsonMatch) throw new Error('No JSON found in response');
 
     const parsed = JSON.parse(jsonMatch[0]);
+    const businessName = businessContext.name || 'our shop';
+
+    // Build captionOptions from response, falling back to legacy altCaptions
+    let captionOptions: CaptionOption[] = [];
+    if (Array.isArray(parsed.captionOptions) && parsed.captionOptions.length >= 3) {
+      captionOptions = parsed.captionOptions.slice(0, 3).map((o: { label?: string; caption?: string }) => ({
+        label: o.label || 'Caption',
+        caption: o.caption || '',
+      }));
+    } else {
+      // Fallback: build from caption + altCaptions
+      const primary = parsed.caption || `Check out our latest creation! Made with love at ${businessName}.`;
+      const alts: string[] = parsed.altCaptions || [];
+      captionOptions = [
+        { label: 'Warm & Friendly', caption: primary },
+        { label: 'Professional', caption: alts[0] || `Proudly presenting our latest from ${businessName}. Crafted with care.` },
+        { label: 'Fun & Catchy', caption: alts[1] || `You're going to love this one! Fresh from ${businessName}! 🔥` },
+      ];
+    }
+
     return {
-      caption: parsed.caption || `Check out our latest creation! Made with love at ${businessContext.name || 'our shop'}.`,
+      caption: captionOptions[0].caption,
       hashtags: parsed.hashtags || ['handmade', 'smallbusiness', 'shopsmall'],
       platform: parsed.platform || 'Instagram',
       tip: parsed.tip || 'Post during peak engagement hours for best results!',
-      altCaptions: parsed.altCaptions || [],
+      captionOptions,
+      altCaptions: captionOptions.slice(1).map(o => o.caption),
     };
   } catch (error) {
     console.error('Gemini analysis failed:', error);

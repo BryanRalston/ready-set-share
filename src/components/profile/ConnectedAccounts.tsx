@@ -175,17 +175,18 @@ export default function ConnectedAccounts() {
                     </div>
                     <div className="flex gap-2">
                       <div className="flex-1 relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brown-light/40 text-xs">@</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brown-light/60 text-xs">@</span>
                         <input
                           type="text"
                           value={usernameInput}
                           onChange={(e) => setUsernameInput(e.target.value)}
                           placeholder={platform.placeholder}
+                          aria-label={`${platform.name} username`}
                           autoFocus
                           autoCapitalize="off"
                           autoCorrect="off"
                           spellCheck={false}
-                          className="w-full pl-7 pr-3 py-2 rounded-lg border border-cream-200 bg-white text-sm text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300"
+                          className="w-full pl-7 pr-3 py-2 rounded-lg border border-cream-200 bg-white text-sm text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleConnect(platform.key);
                             if (e.key === 'Escape') { setEditing(null); setUsernameInput(''); }

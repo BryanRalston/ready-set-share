@@ -3,12 +3,23 @@
 import { motion } from 'framer-motion';
 import AppShell from '@/components/layout/AppShell';
 import GrowthStats from '@/components/analytics/GrowthStats';
-import EngagementChart from '@/components/analytics/EngagementChart';
-import PlatformBreakdown from '@/components/analytics/PlatformBreakdown';
+import dynamic from 'next/dynamic';
 import MonthlyRecap from '@/components/analytics/MonthlyRecap';
 import AnalyticsEmptyState from '@/components/analytics/AnalyticsEmptyState';
-import PostPerformance from '@/components/analytics/PostPerformance';
 import { getMonthStats } from '@/lib/analytics-data';
+
+const EngagementChart = dynamic(() => import('@/components/analytics/EngagementChart'), {
+  loading: () => <div className="h-48 rounded-2xl bg-cream-100 animate-pulse" />,
+  ssr: false,
+});
+const PlatformBreakdown = dynamic(() => import('@/components/analytics/PlatformBreakdown'), {
+  loading: () => <div className="h-48 rounded-2xl bg-cream-100 animate-pulse" />,
+  ssr: false,
+});
+const PostPerformance = dynamic(() => import('@/components/analytics/PostPerformance'), {
+  loading: () => <div className="h-48 rounded-2xl bg-cream-100 animate-pulse" />,
+  ssr: false,
+});
 
 const container = {
   hidden: {},

@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoCloseOutline } from 'react-icons/io5';
 
@@ -14,16 +14,72 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Manage body overflow and focus
   useEffect(() => {
     if (isOpen) {
+      // Store the previously focused element
+      previousFocusRef.current = document.activeElement as HTMLElement;
       document.body.style.overflow = 'hidden';
+
+      // Focus the modal container after animation
+      requestAnimationFrame(() => {
+        const closeBtn = modalRef.current?.querySelector<HTMLElement>('button[aria-label="Close"]');
+        closeBtn?.focus();
+      });
     } else {
       document.body.style.overflow = '';
+      // Restore focus to the element that opened the modal
+      previousFocusRef.current?.focus();
     }
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // Trap focus within the modal while open
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab') return;
+    const modal = modalRef.current;
+    if (!modal) return;
+
+    const focusable = modal.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), textarea, input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable.length === 0) {
+      e.preventDefault();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }, []);
 
   return (
     <AnimatePresence>
@@ -35,8 +91,14 @@ export default function Modal({ isOpen, onClose, title, children, className }: M
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-brown-dark/40 backdrop-blur-sm z-40"
             onClick={onClose}
+            aria-hidden="true"
           />
           <motion.div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title || 'Dialog'}
+            onKeyDown={handleKeyDown}
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
@@ -55,6 +117,7 @@ export default function Modal({ isOpen, onClose, title, children, className }: M
               )}
               <button
                 onClick={onClose}
+                aria-label="Close"
                 className="ml-auto w-8 h-8 rounded-full bg-cream-100 flex items-center justify-center text-brown-light hover:bg-cream-200 transition-colors"
               >
                 <IoCloseOutline className="w-5 h-5" />

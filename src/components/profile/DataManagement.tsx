@@ -214,6 +214,7 @@ export default function DataManagement() {
           type="file"
           accept=".json"
           onChange={handleFileSelected}
+          aria-label="Import backup file"
           className="hidden"
         />
 

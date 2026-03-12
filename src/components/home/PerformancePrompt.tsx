@@ -94,6 +94,7 @@ export default function PerformancePrompt() {
           </div>
           <button
             onClick={() => setDismissed(true)}
+            aria-label="Dismiss"
             className="w-6 h-6 rounded-full flex items-center justify-center text-brown-light hover:text-brown hover:bg-cream-100 transition-colors"
           >
             <IoCloseOutline className="w-4 h-4" />
@@ -123,7 +124,7 @@ export default function PerformancePrompt() {
                 value={likes}
                 onChange={(e) => setLikes(e.target.value)}
                 placeholder="0"
-                className="w-full rounded-lg border border-cream-200 bg-cream-50 px-2.5 py-1.5 text-xs text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-1 focus:ring-sage-300"
+                className="w-full rounded-lg border border-cream-200 bg-cream-50 px-2.5 py-1.5 text-xs text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-1 focus:ring-sage-300"
               />
             </div>
             <div>
@@ -135,7 +136,7 @@ export default function PerformancePrompt() {
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
                 placeholder="0"
-                className="w-full rounded-lg border border-cream-200 bg-cream-50 px-2.5 py-1.5 text-xs text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-1 focus:ring-sage-300"
+                className="w-full rounded-lg border border-cream-200 bg-cream-50 px-2.5 py-1.5 text-xs text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-1 focus:ring-sage-300"
               />
             </div>
             <div>
@@ -147,7 +148,7 @@ export default function PerformancePrompt() {
                 value={saves}
                 onChange={(e) => setSaves(e.target.value)}
                 placeholder="0"
-                className="w-full rounded-lg border border-cream-200 bg-cream-50 px-2.5 py-1.5 text-xs text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-1 focus:ring-sage-300"
+                className="w-full rounded-lg border border-cream-200 bg-cream-50 px-2.5 py-1.5 text-xs text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-1 focus:ring-sage-300"
               />
             </div>
           </div>
@@ -160,6 +161,8 @@ export default function PerformancePrompt() {
                 <button
                   key={star}
                   onClick={() => setRating(star === rating ? 0 : star)}
+                  aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
+                  aria-pressed={star <= rating}
                   className="p-0.5 text-gold-300 transition-transform active:scale-90"
                 >
                   {star <= rating ? (
@@ -180,7 +183,7 @@ export default function PerformancePrompt() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="What worked? What didn't?"
-              className="w-full rounded-lg border border-cream-200 bg-cream-50 px-2.5 py-1.5 text-xs text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-1 focus:ring-sage-300"
+              className="w-full rounded-lg border border-cream-200 bg-cream-50 px-2.5 py-1.5 text-xs text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-1 focus:ring-sage-300"
             />
           </div>
 

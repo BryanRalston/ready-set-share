@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoCloseOutline, IoTrashOutline, IoCreateOutline } from 'react-icons/io5';
@@ -25,6 +25,15 @@ export default function PhotoDetail({ photo, onClose, onDelete, onUpdate }: Phot
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const hasChanges = name !== (photo.name || '') || description !== (photo.description || '');
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const handleSave = async () => {
     if (!hasChanges) return;
@@ -65,6 +74,7 @@ export default function PhotoDetail({ photo, onClose, onDelete, onUpdate }: Phot
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-brown-dark/40 backdrop-blur-sm z-40"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Detail panel */}
@@ -73,6 +83,9 @@ export default function PhotoDetail({ photo, onClose, onDelete, onUpdate }: Phot
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 100 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Photo Details"
         className="fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-xl max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
@@ -82,6 +95,7 @@ export default function PhotoDetail({ photo, onClose, onDelete, onUpdate }: Phot
           </h2>
           <button
             onClick={onClose}
+            aria-label="Close"
             className="w-8 h-8 rounded-full bg-cream-100 flex items-center justify-center text-brown-light hover:bg-cream-200 transition-colors"
           >
             <IoCloseOutline className="w-5 h-5" />
@@ -111,7 +125,7 @@ export default function PhotoDetail({ photo, onClose, onDelete, onUpdate }: Phot
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Give this photo a name..."
-              className="w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-3 text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 focus:bg-white transition-all"
+              className="w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-3 text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 focus:bg-white transition-all"
             />
           </div>
 
@@ -123,7 +137,7 @@ export default function PhotoDetail({ photo, onClose, onDelete, onUpdate }: Phot
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add a description..."
               rows={3}
-              className="w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-3 text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 focus:bg-white transition-all resize-none"
+              className="w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-3 text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 focus:bg-white transition-all resize-none"
             />
           </div>
 

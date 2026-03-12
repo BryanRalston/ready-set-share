@@ -28,6 +28,7 @@ import { checkAndFireReminders, getUpcomingReminders, type Reminder } from '@/li
 import { getBusinessTypeInfo, type BusinessType } from '@/lib/business-profile';
 import { checkWeekRollover } from '@/lib/goals';
 import GoalTracker from '@/components/home/GoalTracker';
+import WeeklyPlan from '@/components/home/WeeklyPlan';
 import PerformancePrompt from '@/components/home/PerformancePrompt';
 import { SkeletonStatCard, SkeletonPostCard } from '@/components/ui/Skeleton';
 
@@ -135,10 +136,13 @@ export default function HomePage() {
         {/* 3. Weekly goal tracker */}
         <GoalTracker />
 
-        {/* 4. NudgeCard — single CTA based on what user hasn't done yet */}
+        {/* 4. This Week's Plan — 5 actionable content ideas */}
+        <WeeklyPlan />
+
+        {/* 5. NudgeCard — single CTA based on what user hasn't done yet */}
         <NudgeCard />
 
-        {/* 5. Posts list (upcoming/drafts) */}
+        {/* 6. Posts list (upcoming/drafts) */}
         {homeLoading ? (
           <div className="space-y-3">
             <SkeletonPostCard />

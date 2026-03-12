@@ -21,16 +21,17 @@ export default function AppShell({ title, showNotifications, rightAction, childr
   const pathname = usePathname();
   const { isSetup } = useUser();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [checkedOnboarding, setCheckedOnboarding] = useState(false);
 
   useEffect(() => {
-    // Only show onboarding on the home page (not Calendar, Analytics, etc.)
-    if (typeof window !== 'undefined' && pathname === '/') {
+    if (typeof window !== 'undefined' && pathname === '/' && !checkedOnboarding) {
       const seen = localStorage.getItem(ONBOARDING_KEY);
       if (!seen) {
         setShowOnboarding(true);
       }
+      setCheckedOnboarding(true);
     }
-  }, [pathname]);
+  }, [pathname, checkedOnboarding]);
 
   return (
     <div className="min-h-screen bg-cream-100">
@@ -45,11 +46,11 @@ export default function AppShell({ title, showNotifications, rightAction, childr
       <AnimatePresence mode="wait">
         <motion.main
           key={pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.25 }}
-          className="max-w-md mx-auto pb-24 px-4 pt-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="max-w-md mx-auto pb-40 px-4 pt-4"
         >
           {children}
         </motion.main>

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import { useState } from 'react';
 import {
   IoSparkles,
   IoLogoInstagram,
@@ -11,7 +12,13 @@ import {
   IoBulbOutline,
   IoLayersOutline,
   IoImageOutline,
+  IoCheckmarkCircle,
 } from 'react-icons/io5';
+
+export interface CaptionOption {
+  label: string;
+  caption: string;
+}
 
 export interface AnalysisResult {
   caption: string;
@@ -19,6 +26,7 @@ export interface AnalysisResult {
   platform: string;
   tip: string;
   postType: string;
+  captionOptions?: CaptionOption[];
 }
 
 interface AIAnalysisProps {
@@ -27,6 +35,7 @@ interface AIAnalysisProps {
   imageUrl?: string;
   onCreatePost?: () => void;
   onSaveForLater?: () => void;
+  onCaptionSelected?: (caption: string) => void;
 }
 
 function LoadingState() {
@@ -62,13 +71,28 @@ function LoadingState() {
   );
 }
 
-export default function AIAnalysis({ loading, result, onCreatePost, onSaveForLater }: AIAnalysisProps) {
+export default function AIAnalysis({ loading, result, onCreatePost, onSaveForLater, onCaptionSelected }: AIAnalysisProps) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   if (loading) return <LoadingState />;
   if (!result) return null;
 
   const PlatformIcon = result.platform.toLowerCase().includes('pinterest')
     ? IoLogoPinterest
     : IoLogoInstagram;
+
+  const captionOptions = result.captionOptions && result.captionOptions.length > 0
+    ? result.captionOptions
+    : [{ label: 'Caption', caption: result.caption }];
+
+  const hasManyOptions = captionOptions.length > 1;
+
+  const handleSelectCaption = (index: number) => {
+    setSelectedIndex(index);
+    onCaptionSelected?.(captionOptions[index].caption);
+  };
+
+  const selectedCaption = captionOptions[selectedIndex]?.caption || result.caption;
 
   return (
     <motion.div
@@ -77,14 +101,63 @@ export default function AIAnalysis({ loading, result, onCreatePost, onSaveForLat
       transition={{ duration: 0.4 }}
       className="space-y-4"
     >
-      {/* Caption */}
-      <Card padding="lg">
+      {/* Caption Options */}
+      <div>
         <div className="flex items-center gap-2 mb-3">
           <IoSparkles className="w-5 h-5 text-gold-300" />
-          <h3 className="font-semibold text-brown font-[family-name:var(--font-heading)]">Caption</h3>
+          <h3 className="font-semibold text-brown font-[family-name:var(--font-heading)]">
+            {hasManyOptions ? 'Pick Your Caption Style' : 'Caption'}
+          </h3>
         </div>
-        <p className="text-sm text-brown leading-relaxed whitespace-pre-wrap">{result.caption}</p>
-      </Card>
+
+        {hasManyOptions ? (
+          <div className="space-y-2.5">
+            {captionOptions.map((option, index) => {
+              const isSelected = index === selectedIndex;
+              return (
+                <motion.button
+                  key={index}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.08 }}
+                  onClick={() => handleSelectCaption(index)}
+                  className={`w-full text-left rounded-2xl p-4 border-2 transition-all duration-200 ${
+                    isSelected
+                      ? 'border-sage-400 bg-sage-50 shadow-sm'
+                      : 'border-cream-200 bg-white hover:border-sage-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs font-semibold uppercase tracking-wide ${
+                      isSelected ? 'text-sage-600' : 'text-brown-light'
+                    }`}>
+                      {option.label}
+                    </span>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                      >
+                        <IoCheckmarkCircle className="w-5 h-5 text-sage-500" />
+                      </motion.div>
+                    )}
+                  </div>
+                  <p className={`text-sm leading-relaxed ${
+                    isSelected ? 'text-brown' : 'text-brown-light'
+                  }`}>
+                    {option.caption}
+                  </p>
+                </motion.button>
+              );
+            })}
+          </div>
+        ) : (
+          <Card padding="lg">
+            <p className="text-sm text-brown leading-relaxed whitespace-pre-wrap">{selectedCaption}</p>
+          </Card>
+        )}
+      </div>
 
       {/* Hashtags */}
       <Card>

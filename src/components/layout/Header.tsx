@@ -21,7 +21,10 @@ export default function Header({ title = 'Ready Set Share', showNotifications = 
           {title}
         </h1>
         {rightAction || (showNotifications && (
-          <button className="w-9 h-9 rounded-full bg-white border border-cream-200 flex items-center justify-center text-brown-light hover:text-sage-500 hover:border-sage-200 transition-colors">
+          <button
+            aria-label="Notifications"
+            className="w-9 h-9 rounded-full bg-white border border-cream-200 flex items-center justify-center text-brown-light hover:text-sage-500 hover:border-sage-200 transition-colors"
+          >
             <IoNotificationsOutline size={18} />
           </button>
         ))}

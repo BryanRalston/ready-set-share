@@ -126,7 +126,8 @@ export default function QRGenerator() {
             placeholder="https://your-url.com"
             value={customUrl}
             onChange={(e) => setCustomUrl(e.target.value)}
-            className="w-full text-xs bg-cream-50 border border-cream-200 rounded-lg px-3 py-2 text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300"
+            aria-label="Custom URL for QR code"
+            className="w-full text-xs bg-cream-50 border border-cream-200 rounded-lg px-3 py-2 text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300"
           />
         </motion.div>
       )}

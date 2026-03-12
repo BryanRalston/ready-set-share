@@ -50,7 +50,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    runMigrations();
+    if (!sessionStorage.getItem('rss-migrations-done')) {
+      runMigrations();
+      sessionStorage.setItem('rss-migrations-done', '1');
+    }
     setPrefs(loadPrefs());
     setApiKey(getGeminiApiKey());
     setMounted(true);

@@ -10,7 +10,7 @@ export function generateLandingHTML(config: {
 }): string {
   const {
     businessName = 'My Business',
-    businessDescription = 'Quality products crafted with care.',
+    businessDescription = '',
     businessType,
     photos,
     socialLinks,
@@ -91,11 +91,11 @@ export function generateLandingHTML(config: {
   // Determine about text
   const hasLongDescription = businessDescription && businessDescription.length > 60;
   const heroSubtitle = hasLongDescription
-    ? 'Quality products crafted with care.'
-    : (businessDescription || 'Quality products crafted with care.');
+    ? 'Welcome — we\'re glad you\'re here.'
+    : (businessDescription || 'Welcome — we\'re glad you\'re here.');
   const aboutText = hasLongDescription
     ? businessDescription
-    : 'Every piece is thoughtfully crafted with quality materials and attention to detail. We take pride in creating products that bring joy to our customers.';
+    : 'We take pride in what we do. Explore our work and reach out anytime.';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -103,9 +103,9 @@ export function generateLandingHTML(config: {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHTML(businessName)}</title>
-  <meta name="description" content="${escapeHTML(businessDescription || 'Quality products crafted with care.')}" />
+  <meta name="description" content="${escapeHTML(businessDescription || businessName)}" />
   <meta property="og:title" content="${escapeHTML(businessName)}" />
-  <meta property="og:description" content="${escapeHTML(businessDescription || 'Quality products crafted with care.')}" />
+  <meta property="og:description" content="${escapeHTML(businessDescription || businessName)}" />
   <meta property="og:type" content="website" />
   <style>
     /* Reset & Base */

@@ -328,12 +328,14 @@ export default function GitHubDeploy() {
                         onChange={(e) => { setTokenInput(e.target.value); setValidationError(''); }}
                         onKeyDown={(e) => e.key === 'Enter' && handleValidateToken()}
                         placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                        aria-label="GitHub personal access token"
                         className="w-full text-sm px-3 py-2 pr-9 rounded-xl border border-cream-200 bg-cream-50 text-brown focus:outline-none focus:ring-2 focus:ring-sage-300 font-mono"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={() => setShowToken(!showToken)}
+                        aria-label={showToken ? 'Hide token' : 'Show token'}
                         className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brown-light hover:text-brown"
                       >
                         {showToken ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}

@@ -144,7 +144,7 @@ export default function PostEditor({
       >
         <Card>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-brown">Caption</label>
+            <label htmlFor="caption-editor" className="text-sm font-medium text-brown">Caption</label>
             <div className="flex items-center gap-2">
               <span className={`text-xs ${charColor}`}>{charCount}/{MAX_CAPTION_LENGTH}</span>
               <button
@@ -158,10 +158,11 @@ export default function PostEditor({
             </div>
           </div>
           <textarea
+            id="caption-editor"
             value={caption}
             onChange={(e) => handleCaptionChange(e.target.value)}
             rows={captionExpanded ? 12 : 6}
-            className="w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 focus:bg-white transition-all resize-none"
+            className="w-full rounded-xl border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 focus:bg-white transition-all resize-none"
             placeholder="Write your caption..."
           />
         </Card>
@@ -204,10 +205,12 @@ export default function PostEditor({
               onChange={(e) => setNewTag(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomTag())}
               placeholder="Add custom hashtag"
-              className="flex-1 rounded-lg border border-cream-200 bg-cream-50 px-3 py-2 text-xs text-brown placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300"
+              aria-label="Custom hashtag"
+              className="flex-1 rounded-lg border border-cream-200 bg-cream-50 px-3 py-2 text-xs text-brown placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300"
             />
             <button
               onClick={addCustomTag}
+              aria-label="Add hashtag"
               className="w-8 h-8 rounded-lg bg-sage-50 flex items-center justify-center text-sage-500 hover:bg-sage-100 transition-colors"
             >
               <IoAddOutline className="w-4 h-4" />
@@ -287,6 +290,7 @@ export default function PostEditor({
                     type="date"
                     value={scheduleDate}
                     min={new Date().toISOString().split('T')[0]}
+                    aria-label="Reminder date"
                     onChange={(e) => {
                       setScheduleDate(e.target.value);
                       onScheduleChange?.({ type: 'scheduled', date: e.target.value, time: scheduleTime });
@@ -297,6 +301,7 @@ export default function PostEditor({
                   <input
                     type="time"
                     value={scheduleTime}
+                    aria-label="Reminder time"
                     onChange={(e) => {
                       setScheduleTime(e.target.value);
                       onScheduleChange?.({ type: 'scheduled', date: scheduleDate, time: e.target.value });

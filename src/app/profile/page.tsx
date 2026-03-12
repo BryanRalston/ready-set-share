@@ -44,12 +44,12 @@ const DARK_MODE_KEY = 'biz-social-dark-mode';
 const stagger = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.08 },
+    transition: { staggerChildren: 0.04 },
   },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0 },
 };
 
@@ -75,11 +75,13 @@ export default function ProfilePage() {
   const [businessDescInput, setBusinessDescInput] = useState(businessDescription);
   const [editingBusinessType, setEditingBusinessType] = useState(false);
 
-  // Load real stats
+  // Load real stats and dark mode preference on mount
   useEffect(() => {
     setPostCount(getPostCount());
     setStreak(getCurrentStreak());
     setDraftCount(getDrafts().length);
+    const stored = localStorage.getItem(DARK_MODE_KEY);
+    setDarkMode(stored === 'true');
   }, []);
 
   // Sync nameInput when displayName changes
@@ -100,13 +102,6 @@ export default function ProfilePage() {
   useEffect(() => {
     setBusinessDescInput(businessDescription);
   }, [businessDescription]);
-
-  // Load dark mode preference on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(DARK_MODE_KEY);
-    const isDark = stored === 'true';
-    setDarkMode(isDark);
-  }, []);
 
   const toggleDarkMode = useCallback(() => {
     const next = !darkMode;
@@ -183,8 +178,8 @@ export default function ProfilePage() {
         className="space-y-5"
       >
         {/* Avatar + name */}
-        <motion.div variants={fadeUp} className="flex flex-col items-center text-center pt-2">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sage-300 to-sage-500 flex items-center justify-center text-white text-2xl font-bold shadow-md shadow-sage-500/20 mb-3">
+        <motion.div variants={fadeUp} className="flex flex-col items-center text-center pt-4">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sage-300 to-sage-500 flex items-center justify-center text-white text-2xl font-bold shadow-md shadow-sage-500/20 dark:shadow-sage-400/40 mb-3">
             {initials}
           </div>
           <h2 className="text-xl font-bold text-brown font-[family-name:var(--font-heading)]">
@@ -245,6 +240,7 @@ export default function ProfilePage() {
                       onChange={(e) => setBusinessNameInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveBusinessName()}
                       placeholder="Your business name"
+                      aria-label="Business name"
                       className="flex-1 text-sm px-3 py-2 rounded-xl border border-cream-200 bg-cream-50 text-brown focus:outline-none focus:ring-2 focus:ring-sage-300"
                       autoFocus
                     />
@@ -277,6 +273,7 @@ export default function ProfilePage() {
                       onChange={(e) => setBusinessDescInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveBusinessDesc()}
                       placeholder="What does your business do?"
+                      aria-label="Business description"
                       className="flex-1 text-sm px-3 py-2 rounded-xl border border-cream-200 bg-cream-50 text-brown focus:outline-none focus:ring-2 focus:ring-sage-300"
                       autoFocus
                     />
@@ -348,6 +345,7 @@ export default function ProfilePage() {
                       value={nameInput}
                       onChange={(e) => setNameInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                      aria-label="Display name"
                       className="flex-1 text-sm px-3 py-2 rounded-xl border border-cream-200 bg-cream-50 text-brown focus:outline-none focus:ring-2 focus:ring-sage-300"
                       autoFocus
                     />
@@ -386,12 +384,14 @@ export default function ProfilePage() {
                         onChange={(e) => setApiKeyInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSaveApiKey()}
                         placeholder="AIza..."
+                        aria-label="Gemini API key"
                         className="w-full text-sm px-3 py-2 pr-9 rounded-xl border border-cream-200 bg-cream-50 text-brown focus:outline-none focus:ring-2 focus:ring-sage-300"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={() => setShowApiKey(!showApiKey)}
+                        aria-label={showApiKey ? 'Hide API key' : 'Show API key'}
                         className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brown-light hover:text-brown"
                       >
                         {showApiKey ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}

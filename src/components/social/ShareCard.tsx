@@ -98,7 +98,7 @@ export default function ShareCard() {
             <Card>
               <div className="text-center py-2">
                 <div className="text-3xl mb-2">📱✨</div>
-                <h3 className="text-sm font-semibold text-brown mb-1">Share Ready Set Share</h3>
+                <h3 className="text-sm font-semibold text-brown mb-1">Spread the Word</h3>
                 <p className="text-[10px] text-brown-light mb-3">
                   Know a small business owner? Share the love!
                 </p>

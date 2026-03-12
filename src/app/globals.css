@@ -5,9 +5,9 @@
   --color-sage-100: #dce8d8;
   --color-sage-200: #b9d1b1;
   --color-sage-300: #A8C5A0;
-  --color-sage-400: #8fb284;
-  --color-sage-500: #7C9A6E;
-  --color-sage-600: #637b58;
+  --color-sage-400: #68895A;
+  --color-sage-500: #587548;
+  --color-sage-600: #4E6643;
   --color-sage-700: #4a5c42;
 
   --color-cream-50: #FFFCF7;
@@ -24,7 +24,7 @@
   --color-eucalyptus-light: #c4dbbe;
 
   --color-brown: #6B4F3A;
-  --color-brown-light: #8B6F5A;
+  --color-brown-light: #6B5440;
   --color-brown-dark: #4a3628;
 
   --color-dark-bg: #1a1a1a;
@@ -125,6 +125,24 @@ html.dark textarea:focus {
 /* Smooth transition for all dark-mode-affected elements */
 html.dark * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Global focus-visible ring for accessibility (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2px solid var(--color-sage-500);
+  outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users; keep for keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Inputs/textareas already handle focus via ring classes — remove double outline */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

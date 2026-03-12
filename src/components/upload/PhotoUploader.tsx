@@ -60,6 +60,7 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
             animate={{ scale: 1 }}
             transition={{ delay: 0.3 }}
             onClick={onClear}
+            aria-label="Remove photo"
             className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-brown-light hover:text-brown shadow-sm"
           >
             <IoCloseCircle className="w-6 h-6" />
@@ -110,10 +111,12 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
       </div>
       <input
         ref={inputRef}
+        id="photo-upload-input"
         type="file"
         accept="image/*"
         capture="environment"
         onChange={handleChange}
+        aria-label="Upload a photo"
         className="hidden"
       />
     </motion.label>

@@ -48,20 +48,34 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const namePlaceholder = useMemo(() => {
     if (!selectedTypeInfo) return 'My Business';
     const examples: Record<string, string> = {
-      wreaths: "Sarah's Wreaths",
-      candles: "Sarah's Candles",
-      jewelry: "Sarah's Jewelry",
-      pottery: "Sarah's Pottery",
-      'baked-goods': "Sarah's Bakery",
-      soap: "Sarah's Soap Co.",
-      art: "Sarah's Art Studio",
-      clothing: "Sarah's Boutique",
-      woodwork: "Sarah's Woodshop",
-      flowers: "Sarah's Flowers",
-      crafts: "Sarah's Crafts",
-      other: "Sarah's Shop",
+      wreaths: "Bloom & Vine Wreaths",
+      candles: "Golden Hour Candles",
+      jewelry: "Tiny Luxe Jewelry",
+      pottery: "Fireside Pottery",
+      'baked-goods': "Sweet Mornings Bakery",
+      soap: "Wild Sage Soap Co.",
+      art: "Brushwork Studio",
+      clothing: "Thread & Bloom",
+      woodwork: "Grain & Grit Woodshop",
+      flowers: "Petal & Stem",
+      crafts: "The Craft Corner",
+      restaurant: "The Corner Table",
+      'food-truck': "Rolling Feast",
+      cafe: "Morning Brew Cafe",
+      salon: "Glow Hair Studio",
+      barber: "Sharp Cuts Barbershop",
+      cleaning: "Sparkle Clean Co.",
+      landscaping: "Green Thumb Landscaping",
+      'auto-detailing': "Elite Auto Detail",
+      fitness: "FitLife Training",
+      photography: "Captured Moments Photo",
+      coaching: "Level Up Coaching",
+      'real-estate': "HomeFind Realty",
+      boutique: "The Little Boutique",
+      'pet-services': "Happy Paws Pet Care",
+      other: "My Business",
     };
-    return examples[selectedTypeInfo.key] || "Sarah's Shop";
+    return examples[selectedTypeInfo.key] || "My Business";
   }, [selectedTypeInfo]);
 
   const finishOnboarding = useCallback(() => {
@@ -127,7 +141,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       <div className="w-40 h-40 rounded-full bg-gradient-to-br from-sage-400 to-sage-500 flex items-center justify-center mb-8 shadow-lg">
         <motion.div
           animate={{ rotate: [0, 10, -10, 5, -5, 0] }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+          transition={{ duration: 2, repeat: 3, repeatDelay: 1 }}
         >
           <IoSparklesOutline className="w-16 h-16 text-white" />
         </motion.div>
@@ -189,7 +203,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gold-300 to-gold-400 flex items-center justify-center mb-6 shadow-lg">
           <motion.div
             animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+            transition={{ duration: 1.5, repeat: 3 }}
             className="text-5xl"
           >
             {selectedTypeInfo?.emoji || '🛍️'}
@@ -215,7 +229,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               onChange={(e) => setBusinessName(e.target.value)}
               placeholder={namePlaceholder}
               autoFocus
-              className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors"
+              className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && businessName.trim()) handleNext();
               }}
@@ -241,7 +255,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               }}
               placeholder="What makes your products special?"
               rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors resize-none"
             />
           </div>
         </div>
@@ -322,7 +336,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             setShowKey(false);
           }}
           placeholder="Paste your API key here"
-          className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/40 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors"
+          aria-label="Google AI API key"
+          className="w-full px-4 py-3 rounded-xl border border-cream-200 bg-white text-brown text-sm placeholder:text-brown-light/75 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-sage-300 transition-colors"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && apiKey.trim()) handleNext();
           }}
@@ -427,10 +442,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, x: direction * 100 }}
+            initial={{ opacity: 0, x: direction * 60 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction * -100 }}
-            transition={{ duration: 0.35, ease: 'easeInOut' }}
+            exit={{ opacity: 0, x: direction * -60 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="flex flex-col items-center text-center w-full"
           >
             {stepRenderers[currentStep]()}
@@ -449,7 +464,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 width: i === currentStep ? 24 : 8,
                 backgroundColor: i === currentStep ? '#7C9A6E' : '#dce8d8',
               }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              transition={{ duration: 0.15 }}
               className="h-2 rounded-full"
             />
           ))}

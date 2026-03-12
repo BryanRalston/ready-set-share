@@ -227,9 +227,23 @@ function getSampleCaption(businessType: string, vibe: string): string {
     woodwork: `Handcrafted from start to finish. The ${vibeDetail} really bring this one together ✨`,
     flowers: `Arranged with care, blooming with personality. Love these ${vibeDetail} ✨`,
     crafts: `Handmade with love, every piece is unique. Those ${vibeDetail} are everything ✨`,
+    restaurant: `Made fresh, served with pride. Those ${vibeDetail} set the mood ✨`,
+    'food-truck': `Street food done right. Love how those ${vibeDetail} capture the vibe ✨`,
+    cafe: `Brewed with care, served with a smile. Those ${vibeDetail} make the moment ✨`,
+    salon: `Styled with confidence. Those ${vibeDetail} really complete the look ✨`,
+    barber: `Clean lines, sharp style. The ${vibeDetail} bring it all together ✨`,
+    cleaning: `Spotless results, every time. Those ${vibeDetail} speak for themselves ✨`,
+    landscaping: `Designed by nature, shaped by us. Love these ${vibeDetail} ✨`,
+    'auto-detailing': `Mirror finish, every detail perfect. Those ${vibeDetail} really shine ✨`,
+    fitness: `Stronger every day. Love how those ${vibeDetail} capture the energy ✨`,
+    photography: `Every frame tells a story. Those ${vibeDetail} bring it to life ✨`,
+    coaching: `Growth looks good on everyone. Love how these ${vibeDetail} capture the journey ✨`,
+    'real-estate': `Welcome home. Those ${vibeDetail} make all the difference ✨`,
+    boutique: `Curated with care, styled for you. Love these ${vibeDetail} ✨`,
+    'pet-services': `Happy pets, happy people. Those ${vibeDetail} say it all ✨`,
   };
 
-  return captions[businessType] || `Handmade with love, every piece is unique. Those ${vibeDetail} are everything ✨`;
+  return captions[businessType] || `Every detail matters. Love how these ${vibeDetail} came together ✨`;
 }
 
 /**
