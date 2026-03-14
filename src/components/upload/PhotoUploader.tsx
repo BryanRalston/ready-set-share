@@ -82,10 +82,13 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
 
   return (
     <>
-    <motion.label
+    <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       whileTap={{ scale: 0.98 }}
+      onClick={() => inputRef.current?.click()}
+      role="button"
+      tabIndex={0}
       className={cn(
         'flex flex-col items-center justify-center gap-4 py-16 rounded-2xl border-2 border-dashed cursor-pointer transition-all',
         isDragging
@@ -118,7 +121,7 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
         aria-label="Upload a photo"
         className="absolute w-0 h-0 opacity-0 overflow-hidden"
       />
-    </motion.label>
+    </motion.div>
     {onChooseFromLibrary && (
       <motion.button
         initial={{ opacity: 0 }}
