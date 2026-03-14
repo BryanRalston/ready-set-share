@@ -1,4 +1,4 @@
-// Orchestrates publishing (copy-to-clipboard) and manages drafts
+// Orchestrates sharing to social platforms with Web Share API + fallbacks, and manages drafts
 
 export interface PostDraft {
   id: string;
@@ -19,17 +19,181 @@ export interface PublishResult {
   error?: string;
 }
 
+export type ShareOutcome =
+  | { method: 'native'; shared: true }
+  | { method: 'native'; shared: false; reason: 'cancelled' | 'error' }
+  | { method: 'intent'; platform: string }
+  | { method: 'clipboard'; success: boolean };
+
 const DRAFTS_KEY = 'biz-social-drafts';
 
 // Build the full post text from caption + hashtags
-function buildPostText(caption: string, hashtags: string[]): string {
+export function buildPostText(caption: string, hashtags: string[]): string {
   const hashtagLine = hashtags
     .map(h => (h.startsWith('#') ? h : `#${h}`))
     .join(' ');
-  return [caption, '', hashtagLine].join('\n');
+  return hashtagLine ? [caption, '', hashtagLine].join('\n') : caption;
 }
 
-// Copy post content to clipboard instead of calling server API routes
+// ---------------------------------------------------------------------------
+// Clipboard
+// ---------------------------------------------------------------------------
+
+/** Pre-copy caption + hashtags to clipboard. Returns true on success. */
+export async function copyToClipboard(caption: string, hashtags: string[]): Promise<boolean> {
+  const fullText = buildPostText(caption, hashtags);
+  try {
+    await navigator.clipboard.writeText(fullText);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Web Share API (native share sheet)
+// ---------------------------------------------------------------------------
+
+/** Check if the browser supports the Web Share API */
+export function canNativeShare(): boolean {
+  return typeof navigator !== 'undefined' && !!navigator.share;
+}
+
+/** Check if the browser supports sharing files via Web Share API Level 2 */
+export function canShareFiles(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  if (!navigator.canShare) return false;
+  try {
+    const testFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+    return navigator.canShare({ files: [testFile] });
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Open the native share sheet with the post content.
+ * Always pre-copies to clipboard first so it's ready to paste.
+ * Returns the share outcome.
+ */
+export async function nativeShare(post: {
+  caption: string;
+  hashtags: string[];
+  imageBase64?: string;
+  imageUrl?: string;
+}): Promise<ShareOutcome> {
+  const fullText = buildPostText(post.caption, post.hashtags);
+
+  // Step 1: Always pre-copy to clipboard
+  await copyToClipboard(post.caption, post.hashtags);
+
+  // Step 2: Build share data
+  const shareData: ShareData = { text: fullText };
+
+  // Step 3: Try to include image as file (Web Share Level 2)
+  const imageData = post.imageBase64 || post.imageUrl;
+  if (imageData) {
+    try {
+      const blob = await dataUrlToBlob(imageData);
+      const file = new File([blob], 'post.jpg', { type: blob.type || 'image/jpeg' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        shareData.files = [file];
+      }
+    } catch {
+      // Image sharing not supported — continue with text only
+    }
+  }
+
+  // Step 4: Open native share sheet
+  try {
+    await navigator.share(shareData);
+    return { method: 'native', shared: true };
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      return { method: 'native', shared: false, reason: 'cancelled' };
+    }
+    return { method: 'native', shared: false, reason: 'error' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Platform intent URLs (fallback for desktop / unsupported browsers)
+// ---------------------------------------------------------------------------
+
+export interface PlatformIntent {
+  key: string;
+  label: string;
+  url: string;
+  tip: string;
+}
+
+/** Generate platform-specific share intent URLs */
+export function getPlatformIntents(caption: string, hashtags: string[]): PlatformIntent[] {
+  const fullText = buildPostText(caption, hashtags);
+  const encoded = encodeURIComponent(fullText);
+
+  return [
+    {
+      key: 'twitter',
+      label: 'X / Twitter',
+      url: `https://twitter.com/intent/tweet?text=${encoded}`,
+      tip: 'Your caption will be pre-filled — just hit post!',
+    },
+    {
+      key: 'facebook',
+      label: 'Facebook',
+      url: `https://www.facebook.com/sharer/sharer.php?quote=${encoded}`,
+      tip: 'Your caption will be included — review and share!',
+    },
+    {
+      key: 'pinterest',
+      label: 'Pinterest',
+      url: `https://pinterest.com/pin/create/button/?description=${encoded}`,
+      tip: 'Your caption will be included — pick a board and pin it!',
+    },
+    {
+      key: 'instagram',
+      label: 'Instagram',
+      url: '', // Instagram doesn't support pre-filled compose via URL
+      tip: 'Your caption is copied — just paste it when Instagram opens!',
+    },
+  ];
+}
+
+/** Open a platform intent URL in a new window/tab */
+export function openPlatformIntent(intent: PlatformIntent): void {
+  if (intent.url) {
+    window.open(intent.url, '_blank', 'noopener,noreferrer');
+  }
+}
+
+/**
+ * Share to a specific platform via intent URL.
+ * Pre-copies to clipboard first, then opens the platform URL.
+ */
+export async function shareViaPlatform(
+  platform: string,
+  caption: string,
+  hashtags: string[],
+): Promise<ShareOutcome> {
+  // Always pre-copy
+  await copyToClipboard(caption, hashtags);
+
+  const intents = getPlatformIntents(caption, hashtags);
+  const intent = intents.find(i => i.key === platform);
+
+  if (intent && intent.url) {
+    openPlatformIntent(intent);
+  }
+  // For Instagram (no URL), clipboard is enough — the UI will show the tip
+
+  return { method: 'intent', platform };
+}
+
+// ---------------------------------------------------------------------------
+// Legacy publishPost (kept for backward compatibility)
+// ---------------------------------------------------------------------------
+
 export async function publishPost(post: {
   caption: string;
   hashtags: string[];
@@ -38,31 +202,17 @@ export async function publishPost(post: {
   platforms: string[];
   scheduledFor?: string;
 }): Promise<{ results: PublishResult[] }> {
-  const fullText = buildPostText(post.caption, post.hashtags);
-
-  try {
-    await navigator.clipboard.writeText(fullText);
-    // Return a single success result — the text is on the clipboard
-    return {
-      results: [{
-        platform: 'clipboard',
-        success: true,
-      }],
-    };
-  } catch {
-    // Clipboard API can fail in headless browsers, iframes, or without user gesture.
-    // Show a friendly message instead of the raw technical error.
-    return {
-      results: [{
-        platform: 'clipboard',
-        success: false,
-        error: 'Unable to copy automatically — long-press the caption text above to copy it manually.',
-      }],
-    };
-  }
+  const success = await copyToClipboard(post.caption, post.hashtags);
+  return {
+    results: [{
+      platform: 'clipboard',
+      success,
+      error: success ? undefined : 'Unable to copy automatically — long-press the caption text above to copy it manually.',
+    }],
+  };
 }
 
-// Share post via Web Share API with clipboard fallback
+// Legacy sharePost — now delegates to the new nativeShare flow
 export async function sharePost(post: {
   caption: string;
   hashtags: string[];
@@ -70,61 +220,29 @@ export async function sharePost(post: {
   imageUrl?: string;
   platforms: string[];
 }): Promise<{ results: PublishResult[]; shared: boolean }> {
-  const fullText = buildPostText(post.caption, post.hashtags);
-
-  // Check if Web Share API is available (primarily mobile)
-  if (navigator.share) {
-    try {
-      const shareData: ShareData = {
-        text: fullText,
-      };
-
-      // If we have an image, try to share it as a file (Web Share Level 2)
-      if (post.imageBase64 || post.imageUrl) {
-        const imageData = post.imageBase64 || post.imageUrl;
-        if (imageData) {
-          try {
-            const blob = await dataUrlToBlob(imageData);
-            const file = new File([blob], 'post.jpg', { type: blob.type });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              shareData.files = [file];
-            }
-          } catch {
-            // Image sharing not supported, continue with text only
-          }
-        }
-      }
-
-      await navigator.share(shareData);
-      return {
-        results: [{ platform: 'share', success: true }],
-        shared: true,
-      };
-    } catch (err) {
-      // User cancelled the share dialog — not an error
-      if (err instanceof Error && err.name === 'AbortError') {
-        return {
-          results: [{ platform: 'share', success: false, error: 'Share cancelled' }],
-          shared: false,
-        };
-      }
-      // Fall through to clipboard
+  if (canNativeShare()) {
+    const outcome = await nativeShare(post);
+    if (outcome.method === 'native' && outcome.shared) {
+      return { results: [{ platform: 'share', success: true }], shared: true };
+    }
+    if (outcome.method === 'native' && !outcome.shared && outcome.reason === 'cancelled') {
+      return { results: [{ platform: 'share', success: false, error: 'Share cancelled' }], shared: false };
     }
   }
 
-  // Fallback: clipboard copy
+  // Fallback to clipboard
   const clipboardResult = await publishPost(post);
   return { ...clipboardResult, shared: false };
 }
 
-// Helper to convert base64 data URL to Blob
+// Helper to convert base64 data URL or URL to Blob
 function dataUrlToBlob(dataUrl: string): Promise<Blob> {
   return fetch(dataUrl).then(r => r.blob());
 }
 
-// Check if Web Share API is available
+// Legacy canShare — now aliases canNativeShare
 export function canShare(): boolean {
-  return typeof navigator !== 'undefined' && !!navigator.share;
+  return canNativeShare();
 }
 
 // --- Draft management (localStorage) ---

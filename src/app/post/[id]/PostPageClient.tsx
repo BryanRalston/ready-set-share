@@ -16,13 +16,22 @@ import {
   IoLogoPinterest,
   IoLogoFacebook,
   IoLogoTiktok,
+  IoLogoTwitter,
   IoCheckmarkCircle,
   IoAddCircleOutline,
   IoHomeOutline,
-  IoCopyOutline,
   IoWarningOutline,
+  IoInformationCircleOutline,
 } from 'react-icons/io5';
-import { sharePost, saveDraft, getDraftById, type PublishResult } from '@/lib/publisher';
+import {
+  nativeShare,
+  shareViaPlatform,
+  copyToClipboard,
+  canNativeShare,
+  saveDraft,
+  getDraftById,
+  type ShareOutcome,
+} from '@/lib/publisher';
 import { recordPost, getCurrentStreak, getMilestone } from '@/lib/streak';
 import { recordGoalPost } from '@/lib/goals';
 import { createPerformanceEntry } from '@/lib/performance-log';
@@ -75,6 +84,78 @@ function loadPostData(id: string) {
 
   // Nothing found — fall back to mock
   return MOCK_POST;
+}
+
+// --- Toast notification ---
+
+function Toast({ message, visible }: { message: string; visible: boolean }) {
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-brown text-white text-sm font-medium shadow-lg flex items-center gap-2"
+        >
+          <IoCheckmarkCircle className="w-4 h-4 text-sage-300" />
+          {message}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// --- Platform tip overlay ---
+
+function PlatformTip({ platform, visible, onDismiss }: { platform: string; visible: boolean; onDismiss: () => void }) {
+  const tips: Record<string, { icon: React.ReactNode; message: string }> = {
+    instagram: {
+      icon: <IoLogoInstagram className="w-5 h-5 text-[#E4405F]" />,
+      message: 'Your caption is copied — just paste it when Instagram opens!',
+    },
+    twitter: {
+      icon: <IoLogoTwitter className="w-5 h-5 text-[#1DA1F2]" />,
+      message: 'Your caption will be pre-filled — just hit post!',
+    },
+    facebook: {
+      icon: <IoLogoFacebook className="w-5 h-5 text-[#1877F2]" />,
+      message: 'Your caption will be included — review and share!',
+    },
+    pinterest: {
+      icon: <IoLogoPinterest className="w-5 h-5 text-[#BD081C]" />,
+      message: 'Your caption will be included — pick a board and pin it!',
+    },
+  };
+
+  const tip = tips[platform];
+  if (!tip) return null;
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          className="fixed bottom-6 left-4 right-4 z-50"
+        >
+          <div
+            className="flex items-start gap-3 px-4 py-3.5 rounded-2xl bg-white border border-cream-200 shadow-lg cursor-pointer"
+            onClick={onDismiss}
+          >
+            <div className="shrink-0 mt-0.5">{tip.icon}</div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-brown">{tip.message}</p>
+              <p className="text-xs text-brown-light mt-1">Tap to dismiss</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 
 // --- Celebration confetti particles (framer-motion only) ---
@@ -245,14 +326,14 @@ function PlatformToggle({
 function CelebrationScreen({
   caption,
   hashtags,
-  wasShared,
+  shareOutcome,
   clipboardFailed,
   onCreateAnother,
   onGoHome,
 }: {
   caption: string;
   hashtags: string[];
-  wasShared: boolean;
+  shareOutcome: ShareOutcome | null;
   clipboardFailed: boolean;
   onCreateAnother: () => void;
   onGoHome: () => void;
@@ -262,6 +343,21 @@ function CelebrationScreen({
   // Get streak data
   const streak = getCurrentStreak();
   const milestone = getMilestone(streak);
+
+  // Determine the heading and subtitle based on outcome
+  const heading = shareOutcome?.method === 'native' && 'shared' in shareOutcome && shareOutcome.shared
+    ? 'Nice work!'
+    : shareOutcome?.method === 'intent'
+    ? 'Nice work!'
+    : 'Your post is ready!';
+
+  const subtitle = shareOutcome?.method === 'native' && 'shared' in shareOutcome && shareOutcome.shared
+    ? 'Shared to your social app'
+    : shareOutcome?.method === 'intent'
+    ? `Opened ${getPlatformLabel(shareOutcome.platform)} — paste your caption and post!`
+    : clipboardFailed
+    ? 'Your draft has been saved'
+    : 'Caption copied to clipboard — open your social app and paste it!';
 
   // Generate confetti particles once
   const particles = useMemo(() => {
@@ -328,20 +424,16 @@ function CelebrationScreen({
         transition={{ delay: 0.3 }}
         className="text-2xl font-bold text-brown text-center mb-1"
       >
-        Your post is ready!
+        {heading}
       </motion.h1>
 
       <motion.p
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="text-sm text-brown-light text-center mb-6"
+        className="text-sm text-brown-light text-center mb-6 px-4"
       >
-        {wasShared
-          ? 'Shared to your social app'
-          : clipboardFailed
-          ? 'Your draft has been saved'
-          : 'Caption copied to clipboard'}
+        {subtitle}
       </motion.p>
 
       {/* Clipboard failure note */}
@@ -356,6 +448,23 @@ function CelebrationScreen({
             <IoWarningOutline className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
             <p className="text-xs text-brown-light">
               Automatic copy didn&apos;t work this time. Long-press the caption below to copy it manually.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Platform-specific sharing tip (for intent shares) */}
+      {shareOutcome?.method === 'intent' && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="w-full mb-4"
+        >
+          <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-sage-50 border border-sage-200">
+            <IoInformationCircleOutline className="w-4 h-4 text-sage-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-brown-light">
+              {getPlatformTip(shareOutcome.platform)}
             </p>
           </div>
         </motion.div>
@@ -460,6 +569,29 @@ function CelebrationScreen({
   );
 }
 
+// Helper: get human-readable platform label
+function getPlatformLabel(key: string): string {
+  const labels: Record<string, string> = {
+    twitter: 'X / Twitter',
+    instagram: 'Instagram',
+    facebook: 'Facebook',
+    pinterest: 'Pinterest',
+    clipboard: 'clipboard',
+  };
+  return labels[key] || key;
+}
+
+// Helper: get platform-specific post-share tip
+function getPlatformTip(key: string): string {
+  const tips: Record<string, string> = {
+    twitter: 'Your caption was pre-filled in X / Twitter — review and hit post!',
+    instagram: 'Your caption is on your clipboard — open Instagram, create a post, and paste it!',
+    facebook: 'Your caption was included — review the post and share!',
+    pinterest: 'Your caption was included — pick a board and pin it!',
+  };
+  return tips[key] || 'Your caption is copied — paste it in your social app!';
+}
+
 // --- Main Component ---
 
 export default function PostPageClient({ id }: { id: string }) {
@@ -486,10 +618,39 @@ function PostPageInner({ id }: { id: string }) {
 
   // Celebration state
   const [showCelebration, setShowCelebration] = useState(false);
-  const [wasShared, setWasShared] = useState(false);
+  const [shareOutcome, setShareOutcome] = useState<ShareOutcome | null>(null);
   const [clipboardFailed, setClipboardFailed] = useState(false);
 
-  const handleApprove = async () => {
+  // Toast state
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVisible, setToastVisible] = useState(false);
+
+  // Platform tip state
+  const [platformTipKey, setPlatformTipKey] = useState('');
+  const [platformTipVisible, setPlatformTipVisible] = useState(false);
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    setTimeout(() => setToastVisible(false), 2500);
+  };
+
+  const showPlatformTip = (platform: string) => {
+    setPlatformTipKey(platform);
+    setPlatformTipVisible(true);
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => setPlatformTipVisible(false), 5000);
+  };
+
+  // Record the post for tracking
+  const recordSuccess = useCallback((draftId: string) => {
+    recordPost();
+    recordGoalPost();
+    createPerformanceEntry(draftId, caption, platforms);
+  }, [caption, platforms]);
+
+  // Primary share: native share sheet
+  const handlePrimaryShare = async () => {
     setApproving(true);
 
     const publishPayload = {
@@ -500,29 +661,84 @@ function PostPageInner({ id }: { id: string }) {
       scheduledFor: scheduleType === 'scheduled' ? scheduleDate : undefined,
     };
 
-    // Always copy to clipboard + save as draft (pass existing id for drafts)
+    // Save draft
     const savedDraft = saveDraft(publishPayload, effectiveId !== 'new' ? effectiveId : undefined);
 
-    try {
-      const { results, shared } = await sharePost(publishPayload);
-      setWasShared(shared);
+    if (canNativeShare()) {
+      // Mobile path: native share sheet
+      showToast('Caption copied! Opening share...');
 
-      const anySuccess = results.some(r => r.success);
-      setClipboardFailed(!anySuccess);
+      const outcome = await nativeShare({
+        caption,
+        hashtags,
+        imageUrl: postData.imageUrl || undefined,
+      });
+      setShareOutcome(outcome);
 
-      // Record the post for streak tracking if share/clipboard succeeded
-      if (anySuccess) {
-        recordPost();
-        recordGoalPost();
-        createPerformanceEntry(savedDraft.id, caption, platforms);
+      if (outcome.method === 'native' && outcome.shared) {
+        recordSuccess(savedDraft.id);
+        setClipboardFailed(false);
+      } else if (outcome.method === 'native' && !outcome.shared && outcome.reason === 'cancelled') {
+        // User cancelled — don't show celebration, let them try again
+        setApproving(false);
+        return;
+      } else {
+        // Fallback to clipboard
+        setClipboardFailed(false);
       }
-    } catch {
-      setClipboardFailed(true);
+    } else {
+      // Desktop fallback: copy to clipboard and show celebration with platform links
+      const success = await copyToClipboard(caption, hashtags);
+      setShareOutcome({ method: 'clipboard', success });
+      setClipboardFailed(!success);
+
+      if (success) {
+        showToast('Caption copied to clipboard!');
+        recordSuccess(savedDraft.id);
+      }
     }
 
     setApproving(false);
-    // Always show celebration — even on clipboard failure, the draft is saved
     setShowCelebration(true);
+  };
+
+  // Platform-specific share (from the secondary buttons)
+  const handlePlatformShare = async (platform: string) => {
+    const publishPayload = {
+      caption,
+      hashtags,
+      imageUrl: postData.imageUrl || undefined,
+      platforms,
+    };
+
+    // Save draft
+    const savedDraft = saveDraft(publishPayload, effectiveId !== 'new' ? effectiveId : undefined);
+
+    if (platform === 'clipboard') {
+      // Just copy to clipboard
+      const success = await copyToClipboard(caption, hashtags);
+      if (success) {
+        showToast('Caption copied to clipboard!');
+      }
+      return;
+    }
+
+    // Show platform tip, copy to clipboard, open platform URL
+    showToast('Caption copied! Opening ' + getPlatformLabel(platform) + '...');
+    showPlatformTip(platform);
+
+    const outcome = await shareViaPlatform(platform, caption, hashtags);
+    setShareOutcome(outcome);
+
+    // Record success
+    recordSuccess(savedDraft.id);
+
+    // Show celebration after a brief delay for the platform tip to be seen
+    setTimeout(() => {
+      setPlatformTipVisible(false);
+      setClipboardFailed(false);
+      setShowCelebration(true);
+    }, 1500);
   };
 
   const saveDraftAction = (
@@ -540,6 +756,16 @@ function PostPageInner({ id }: { id: string }) {
       rightAction={showCelebration ? undefined : saveDraftAction}
       showNotifications={false}
     >
+      {/* Toast notification */}
+      <Toast message={toastMessage} visible={toastVisible} />
+
+      {/* Platform tip overlay */}
+      <PlatformTip
+        platform={platformTipKey}
+        visible={platformTipVisible}
+        onDismiss={() => setPlatformTipVisible(false)}
+      />
+
       <AnimatePresence mode="wait">
         {!showCelebration ? (
           <motion.div
@@ -620,7 +846,8 @@ function PostPageInner({ id }: { id: string }) {
 
             <div className="space-y-3 pt-2">
               <ApproveButton
-                onApprove={handleApprove}
+                onApprove={handlePrimaryShare}
+                onPlatformShare={handlePlatformShare}
                 loading={approving}
                 scheduleDate={scheduleType === 'scheduled' ? scheduleDate : undefined}
               />
@@ -638,7 +865,7 @@ function PostPageInner({ id }: { id: string }) {
           <CelebrationScreen
             caption={caption}
             hashtags={hashtags}
-            wasShared={wasShared}
+            shareOutcome={shareOutcome}
             clipboardFailed={clipboardFailed}
             onCreateAnother={() => router.push('/upload')}
             onGoHome={() => router.push('/')}
