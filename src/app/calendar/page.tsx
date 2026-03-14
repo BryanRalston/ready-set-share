@@ -100,7 +100,7 @@ export default function CalendarPage() {
           <button
             onClick={goToPrevMonth}
             aria-label="Previous month"
-            className="w-9 h-9 rounded-full bg-white border border-cream-200 flex items-center justify-center text-brown-light hover:text-sage-500 transition-colors"
+            className="w-11 h-11 rounded-full bg-white border border-cream-200 flex items-center justify-center text-brown-light hover:text-sage-500 transition-colors"
           >
             <IoChevronBackOutline size={18} />
           </button>
@@ -110,7 +110,7 @@ export default function CalendarPage() {
           <button
             onClick={goToNextMonth}
             aria-label="Next month"
-            className="w-9 h-9 rounded-full bg-white border border-cream-200 flex items-center justify-center text-brown-light hover:text-sage-500 transition-colors"
+            className="w-11 h-11 rounded-full bg-white border border-cream-200 flex items-center justify-center text-brown-light hover:text-sage-500 transition-colors"
           >
             <IoChevronForwardOutline size={18} />
           </button>

@@ -87,7 +87,7 @@ export default function HomePage() {
           transition={{ delay: 0.1 }}
         >
           <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)]">
-            {greeting}, {displayName}!
+            {greeting}{displayName ? `, ${displayName}` : ''}!
           </h2>
           <p className="text-brown-light text-sm mt-1">
             {businessName
