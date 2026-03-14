@@ -116,7 +116,7 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
         accept="image/*"
         onChange={handleChange}
         aria-label="Upload a photo"
-        className="hidden"
+        className="absolute w-0 h-0 opacity-0 overflow-hidden"
       />
     </motion.label>
     {onChooseFromLibrary && (
