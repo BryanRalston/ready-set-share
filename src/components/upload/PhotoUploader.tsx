@@ -36,6 +36,10 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
     if (file) {
       onPhotoSelected(file);
     }
+    // Reset so selecting the same file again still triggers onChange
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
   };
 
   if (previewUrl) {
@@ -82,15 +86,17 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
 
   return (
     <>
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => inputRef.current?.click()}
+    <div
+      onClick={() => {
+        if (inputRef.current) {
+          inputRef.current.value = '';
+          inputRef.current.click();
+        }
+      }}
       role="button"
       tabIndex={0}
       className={cn(
-        'flex flex-col items-center justify-center gap-4 py-16 rounded-2xl border-2 border-dashed cursor-pointer transition-all',
+        'flex flex-col items-center justify-center gap-4 py-16 rounded-2xl border-2 border-dashed cursor-pointer transition-all active:scale-[0.98]',
         isDragging
           ? 'border-sage-400 bg-sage-50 scale-[1.02]'
           : 'border-sage-300/50 bg-white hover:border-sage-400 hover:bg-cream-50'
@@ -102,36 +108,35 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
     >
-      <motion.div
-        animate={isDragging ? { scale: 1.1, y: -4 } : { scale: 1, y: 0 }}
-        className="w-16 h-16 rounded-full bg-sage-50 flex items-center justify-center"
+      <div
+        className={cn(
+          'w-16 h-16 rounded-full bg-sage-50 flex items-center justify-center transition-transform',
+          isDragging && 'scale-110 -translate-y-1'
+        )}
       >
         <IoCameraOutline className="w-8 h-8 text-sage-400" />
-      </motion.div>
+      </div>
       <div className="text-center">
         <p className="font-medium text-brown">Tap to choose a photo</p>
         <p className="text-sm text-brown-light/60 mt-1">PNG, JPG up to 10MB</p>
       </div>
-      <input
-        ref={inputRef}
-        id="photo-upload-input"
-        type="file"
-        accept="image/*"
-        onChange={handleChange}
-        aria-label="Upload a photo"
-        className="absolute w-0 h-0 opacity-0 overflow-hidden"
-      />
-    </motion.div>
+    </div>
+    <input
+      ref={inputRef}
+      id="photo-upload-input"
+      type="file"
+      accept="image/*"
+      onChange={handleChange}
+      aria-label="Upload a photo"
+      className="sr-only"
+    />
     {onChooseFromLibrary && (
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
+      <button
         onClick={onChooseFromLibrary}
         className="block w-full text-center mt-3 text-sm text-sage-500 hover:text-sage-600 transition-colors"
       >
         or choose from library
-      </motion.button>
+      </button>
     )}
     </>
   );
