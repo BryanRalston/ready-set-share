@@ -226,6 +226,16 @@ function UploadPageInner() {
     try {
       const base64 = await fileToBase64(file);
       setImageBase64(base64);
+
+      // Auto-save to library in the background
+      const dataUrl = `data:image/jpeg;base64,${base64}`;
+      createThumbnail(dataUrl)
+        .then((thumbnail) =>
+          addPhoto({ name: file.name || '', description: '', base64: dataUrl, thumbnail, tags: [] })
+        )
+        .then(() => setSavedToLibrary(true))
+        .catch(() => { /* IndexedDB may be unavailable */ });
+
       if (isGeminiConfigured()) {
         runAnalysis(base64);
       } else {

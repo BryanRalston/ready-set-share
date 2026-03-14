@@ -3,10 +3,13 @@
 
 const CACHE_NAME = 'readysetshare-v1';
 
+// Detect basePath from the SW's registered scope
+const BASE = self.registration.scope.replace(/\/$/, '').replace(self.location.origin, '') || '';
+
 // App shell files to cache for offline access
 const APP_SHELL = [
-  '/',
-  '/manifest.json',
+  `${BASE}/`,
+  `${BASE}/manifest.json`,
 ];
 
 // Install: cache the app shell
@@ -61,7 +64,7 @@ self.addEventListener('fetch', (event) => {
           if (cachedResponse) return cachedResponse;
           // For navigation requests, return the cached index page
           if (event.request.mode === 'navigate') {
-            return caches.match('/');
+            return caches.match(`${BASE}/`);
           }
           return new Response('Offline', { status: 503, statusText: 'Offline' });
         });
@@ -75,11 +78,11 @@ self.addEventListener('message', (event) => {
     const { title, body, tag, icon } = event.data;
     self.registration.showNotification(title, {
       body: body || 'Your scheduled post is ready to go!',
-      icon: icon || '/icons/icon-192.png',
+      icon: icon || `${BASE}/icons/icon-192.png`,
       tag: tag || 'readysetshare-notification',
-      badge: '/icons/icon-192.png',
+      badge: `${BASE}/icons/icon-192.png`,
       data: {
-        url: '/',
+        url: `${BASE}/`,
       },
     });
   }
@@ -89,7 +92,7 @@ self.addEventListener('message', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const urlToOpen = event.notification.data?.url || '/';
+  const urlToOpen = event.notification.data?.url || `${BASE}/`;
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

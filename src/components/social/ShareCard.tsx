@@ -6,6 +6,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { IoShareOutline } from 'react-icons/io5';
 import { useToast } from '@/components/ui/Toast';
+import { getSiteUrl } from '@/lib/utils';
 
 export default function ShareCard() {
   const [flipped, setFlipped] = useState(false);
@@ -54,7 +55,7 @@ export default function ShareCard() {
   const handleShare = async () => {
     setFlipped(true);
 
-    const url = window.location.origin;
+    const url = getSiteUrl();
 
     if (navigator.share) {
       try {

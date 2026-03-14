@@ -203,7 +203,7 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
               >
-                <Link href={`/post/${draft.id}`}>
+                <Link href={`/post/new?draft=${draft.id}`}>
                   <Card className="flex items-start gap-3">
                     <div className="w-14 h-14 rounded-xl bg-cream-200 flex items-center justify-center text-2xl shrink-0 overflow-hidden">
                       {draft.imageUrl ? (

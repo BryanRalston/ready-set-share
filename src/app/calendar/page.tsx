@@ -90,7 +90,7 @@ export default function CalendarPage() {
 
   return (
     <AppShell title="Calendar">
-      <div className="space-y-4">
+      <div className="space-y-4 pb-8">
         {/* Month header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -185,7 +185,7 @@ export default function CalendarPage() {
               </h3>
               {selectedPosts.length > 0 ? (
                 selectedPosts.map((post) => (
-                  <Link key={post.id} href={`/post/${post.id}`}>
+                  <Link key={post.id} href={`/post/new?draft=${post.id}`}>
                     <Card className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-cream-200 flex items-center justify-center text-lg">
                         📸
@@ -227,7 +227,7 @@ export default function CalendarPage() {
               Unscheduled Drafts
             </h3>
             {unscheduledDrafts.map((draft) => (
-              <Link key={draft.id} href={`/post/${draft.id}`}>
+              <Link key={draft.id} href={`/post/new?draft=${draft.id}`}>
                 <Card className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-cream-200 flex items-center justify-center text-lg">
                     📝

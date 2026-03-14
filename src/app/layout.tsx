@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   title: "Ready Set Share",
   description: "Your AI-powered social media assistant for small business",
   manifest: "/manifest.json",
+  icons: {
+    icon: '/icons/icon-192.png',
+    apple: '/icons/icon-192.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -21,11 +25,20 @@ export const metadata: Metadata = {
     siteName: "Ready Set Share",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Ready Set Share — AI-powered social media assistant for small business',
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Ready Set Share",
     description: "AI-powered social media for your small business",
+    images: ['/og-image.png'],
   },
 };
 
@@ -49,7 +62,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="antialiased min-h-screen bg-cream-100">
         <DarkModeInit />

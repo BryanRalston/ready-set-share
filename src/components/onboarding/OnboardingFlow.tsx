@@ -363,7 +363,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         onClick={handleSkipApiKey}
         className="text-sm text-brown-light/60 hover:text-brown-light transition-colors underline underline-offset-2"
       >
-        Skip for now &mdash; I&apos;ll set it up later in Settings
+        Skip for now &mdash; I&apos;ll set it up later in Profile
       </button>
     </div>
   );

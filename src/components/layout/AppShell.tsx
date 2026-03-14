@@ -23,15 +23,18 @@ export default function AppShell({ title, showNotifications, rightAction, childr
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
 
+  // Strip basePath for reliable comparison in static exports
+  const normalizedPath = pathname.replace(/^\/ready-set-share/, '') || '/';
+
   useEffect(() => {
-    if (typeof window !== 'undefined' && pathname === '/' && !checkedOnboarding) {
+    if (typeof window !== 'undefined' && normalizedPath === '/' && !checkedOnboarding) {
       const seen = localStorage.getItem(ONBOARDING_KEY);
       if (!seen) {
         setShowOnboarding(true);
       }
       setCheckedOnboarding(true);
     }
-  }, [pathname, checkedOnboarding]);
+  }, [normalizedPath, checkedOnboarding]);
 
   return (
     <div className="min-h-screen bg-cream-100">

@@ -1,4 +1,4 @@
-// Voice Matcher — learns from her caption edits to match her writing style
+// Voice Matcher — learns from the user's caption edits to match their writing style
 
 export interface CaptionEdit {
   before: string;
@@ -107,7 +107,7 @@ function formatTone(tone: string): string {
 }
 
 function findCommonPhrases(edits: CaptionEdit[]): string[] {
-  // Find phrases she frequently adds (in "after" but not "before")
+  // Find phrases the user frequently adds (in "after" but not "before")
   const addedPhrases: Record<string, number> = {};
 
   for (const edit of edits) {
@@ -128,7 +128,7 @@ function findCommonPhrases(edits: CaptionEdit[]): string[] {
       }
     }
 
-    // Also detect short repeated phrases she types
+    // Also detect short repeated phrases the user types
     const words = edit.after.split(/\s+/);
     for (let i = 0; i < words.length - 1; i++) {
       const bigram = words.slice(i, i + 2).join(' ').toLowerCase().replace(/[^a-z\s]/g, '');
@@ -229,7 +229,7 @@ export function getVoiceInstruction(): string {
   switch (profile.emojiLevel) {
     case 'none': parts.push('- Do NOT use emojis. Keep it clean and professional.'); break;
     case 'some': parts.push('- Use 1-3 emojis naturally. Don\'t overdo it.'); break;
-    case 'lots': parts.push('- Use plenty of emojis! She loves expressive, emoji-rich captions.'); break;
+    case 'lots': parts.push('- Use plenty of emojis! This user loves expressive, emoji-rich captions.'); break;
   }
 
   // Tone
@@ -237,18 +237,18 @@ export function getVoiceInstruction(): string {
 
   // Common phrases
   if (profile.commonPhrases.length > 0) {
-    parts.push(`- She often uses: "${profile.commonPhrases.join('", "')}"`);
+    parts.push(`- They often use: "${profile.commonPhrases.join('", "')}"`);
   }
 
   // Punctuation
   if (profile.exclamationFrequency === 'high') {
-    parts.push('- She loves exclamation marks! Use them freely!');
+    parts.push('- This user loves exclamation marks! Use them freely!');
   } else if (profile.exclamationFrequency === 'low') {
-    parts.push('- Minimize exclamation marks. She prefers a calmer tone.');
+    parts.push('- Minimize exclamation marks. They prefer a calmer tone.');
   }
 
   if (profile.ellipsisUsage) {
-    parts.push('- She uses "..." for dramatic pauses and transitions.');
+    parts.push('- They use "..." for dramatic pauses and transitions.');
   }
 
   return parts.join('\n');

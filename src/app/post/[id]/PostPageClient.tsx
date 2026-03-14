@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppShell from '@/components/layout/AppShell';
 import PostEditor from '@/components/post/PostEditor';
@@ -463,8 +463,19 @@ function CelebrationScreen({
 // --- Main Component ---
 
 export default function PostPageClient({ id }: { id: string }) {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <PostPageInner id={id} />
+    </Suspense>
+  );
+}
+
+function PostPageInner({ id }: { id: string }) {
   const router = useRouter();
-  const [postData] = useState(() => loadPostData(id));
+  const searchParams = useSearchParams();
+  // Prefer ?draft= query param (works with static export), fall back to route param
+  const effectiveId = searchParams.get('draft') || id;
+  const [postData] = useState(() => loadPostData(effectiveId));
   const [caption, setCaption] = useState(postData.caption);
   const [hashtags, setHashtags] = useState<string[]>(postData.hashtags);
   const [platforms, setPlatforms] = useState<string[]>([postData.platform]);
@@ -490,7 +501,7 @@ export default function PostPageClient({ id }: { id: string }) {
     };
 
     // Always copy to clipboard + save as draft (pass existing id for drafts)
-    const savedDraft = saveDraft(publishPayload, id !== 'new' ? id : undefined);
+    const savedDraft = saveDraft(publishPayload, effectiveId !== 'new' ? effectiveId : undefined);
 
     try {
       const { results, shared } = await sharePost(publishPayload);
@@ -525,7 +536,7 @@ export default function PostPageClient({ id }: { id: string }) {
 
   return (
     <AppShell
-      title={showCelebration ? 'Done!' : id === 'new' ? 'New Post' : 'Edit Post'}
+      title={showCelebration ? 'Done!' : effectiveId === 'new' ? 'New Post' : 'Edit Post'}
       rightAction={showCelebration ? undefined : saveDraftAction}
       showNotifications={false}
     >

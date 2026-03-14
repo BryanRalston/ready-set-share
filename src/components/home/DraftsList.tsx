@@ -94,7 +94,7 @@ export default function DraftsList() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0">
-                  <Link href={`/post/${draft.id}`}>
+                  <Link href={`/post/new?draft=${draft.id}`}>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       className="w-8 h-8 rounded-full bg-sage-50 flex items-center justify-center text-sage-500 hover:bg-sage-100 transition-colors"

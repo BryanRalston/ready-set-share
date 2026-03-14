@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { IoLogoInstagram, IoLogoPinterest, IoLogoFacebook, IoImageOutline } from 'react-icons/io5';
+import Link from 'next/link';
 import { useUser } from '@/lib/user-context';
 import { getDrafts, type PostDraft } from '@/lib/publisher';
 import { getConnectedAccounts, type ConnectedAccount } from '@/lib/social-accounts';
@@ -102,7 +103,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Hero */}
-      <div ref={heroRef} className="relative h-[70vh] overflow-hidden">
+      <div ref={heroRef} className="relative h-[50vh] overflow-hidden">
         <motion.div
           style={{ y: heroY }}
           className="absolute inset-0 bg-gradient-to-br from-sage-500 via-sage-400 to-sage-300"
@@ -143,9 +144,9 @@ export default function LandingPage() {
       </div>
 
       {/* About */}
-      <div className="max-w-md mx-auto px-6 py-12">
+      <div className="max-w-md mx-auto px-6 py-8">
         <FadeInOnScroll>
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-brown font-[family-name:var(--font-heading)] mb-3">
               About
             </h2>
@@ -192,7 +193,7 @@ export default function LandingPage() {
           </div>
         ) : mounted ? (
           <FadeInOnScroll>
-            <div className="flex flex-col items-center justify-center py-12 mb-12 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50/50">
+            <div className="flex flex-col items-center justify-center py-8 mb-6 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50/50">
               <IoImageOutline className="w-10 h-10 text-sage-300 mb-3" />
               <p className="text-sm text-brown-light text-center max-w-[240px]">
                 Upload your first photo to build your gallery!
@@ -245,7 +246,7 @@ export default function LandingPage() {
               ) : (
                 <p className="text-sm text-brown-light">
                   Connect your social accounts in{' '}
-                  <a href="/profile" className="text-sage-500 underline underline-offset-2">Profile</a>
+                  <Link href="/profile" className="text-sage-500 underline underline-offset-2">Profile</Link>
                   {' '}to show them here.
                 </p>
               )}

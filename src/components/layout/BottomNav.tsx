@@ -21,14 +21,19 @@ const navItems = [
 ];
 
 export default function BottomNav() {
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  // Strip basePath (e.g. /ready-set-share) for comparison — usePathname()
+  // should do this in Next.js 13+ but static exports may not strip reliably.
+  const pathname = rawPathname.replace(/^\/ready-set-share/, '') || '/';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 pb-[env(safe-area-inset-bottom)]">
       <div className="bg-white/80 backdrop-blur-xl border-t border-cream-200">
         <div className="flex items-center justify-around h-16 max-w-md mx-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === '/'
+              ? pathname === '/'
+              : pathname.startsWith(item.href);
             const Icon = isActive ? item.activeIcon : item.icon;
             return (
               <Link

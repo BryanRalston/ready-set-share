@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
     // Limit build workers to prevent OOM when bundling heavy deps
     // (recharts, framer-motion, react-icons, @google/generative-ai).
     // Default uses all CPUs which can exhaust memory on constrained systems.
-    cpus: 2,
+    cpus: 1,
   },
 };
 

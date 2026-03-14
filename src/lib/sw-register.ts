@@ -1,5 +1,7 @@
 // Service Worker registration and notification scheduling
 
+import { getBasePath } from './utils';
+
 let swRegistration: ServiceWorkerRegistration | null = null;
 
 /**
@@ -11,8 +13,9 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   if (!('serviceWorker' in navigator)) return null;
 
   try {
-    const registration = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/',
+    const basePath = getBasePath();
+    const registration = await navigator.serviceWorker.register(`${basePath}/sw.js`, {
+      scope: `${basePath}/`,
     });
 
     swRegistration = registration;
@@ -47,21 +50,23 @@ export async function showSWNotification(
   const registration = swRegistration || (await navigator.serviceWorker?.ready.catch(() => null));
 
   if (registration?.active) {
+    const basePath = getBasePath();
     registration.active.postMessage({
       type: 'SHOW_NOTIFICATION',
       title,
       body,
       tag: tag || 'readysetshare-notification',
-      icon: '/icons/icon-192.png',
+      icon: `${basePath}/icons/icon-192.png`,
     });
     return;
   }
 
   // Fallback to basic Notification API
   if ('Notification' in window && Notification.permission === 'granted') {
+    const basePath = getBasePath();
     new Notification(title, {
       body,
-      icon: '/icons/icon-192.png',
+      icon: `${basePath}/icons/icon-192.png`,
       tag: tag || 'readysetshare-notification',
     });
   }

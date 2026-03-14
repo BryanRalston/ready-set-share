@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { getConnectedAccounts } from '@/lib/social-accounts';
 import { IoQrCodeOutline, IoDownloadOutline } from 'react-icons/io5';
+import { getSiteUrl } from '@/lib/utils';
 
 type LinkOption = 'landing' | 'instagram' | 'pinterest' | 'custom';
 
@@ -36,7 +37,7 @@ export default function QRGenerator() {
   const getUrl = useCallback(() => {
     switch (selectedLink) {
       case 'landing':
-        return typeof window !== 'undefined' ? `${window.location.origin}/landing` : '/landing';
+        return typeof window !== 'undefined' ? `${getSiteUrl()}/landing` : '/landing';
       case 'instagram':
         return instagramAccount
           ? `https://instagram.com/${instagramAccount.username}`

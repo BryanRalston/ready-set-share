@@ -17,6 +17,29 @@ export function truncate(str: string, length: number) {
   return str.slice(0, length) + '...';
 }
 
+/**
+ * Get the Next.js basePath at runtime.
+ * Works for both local dev (basePath='') and GitHub Pages (basePath='/ready-set-share').
+ */
+export function getBasePath(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    return (window as Record<string, unknown>).__NEXT_DATA__
+      ? ((window as Record<string, unknown>).__NEXT_DATA__ as Record<string, string>).basePath || ''
+      : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Full site URL including basePath (e.g. "https://bryanralston.github.io/ready-set-share").
+ */
+export function getSiteUrl(): string {
+  if (typeof window === 'undefined') return '';
+  return `${window.location.origin}${getBasePath()}`;
+}
+
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

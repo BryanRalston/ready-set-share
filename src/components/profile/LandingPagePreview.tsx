@@ -11,6 +11,7 @@ import { generateLandingHTML } from '@/lib/landing-generator';
 import { getPhotos } from '@/lib/photo-library';
 import { getConnectedAccounts } from '@/lib/social-accounts';
 import { useToast } from '@/components/ui/Toast';
+import { getSiteUrl } from '@/lib/utils';
 
 export default function LandingPagePreview() {
   const { businessName, businessDescription, businessType } = useUser();
@@ -20,7 +21,7 @@ export default function LandingPagePreview() {
   const [downloading, setDownloading] = useState(false);
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/landing`;
+    const url = `${getSiteUrl()}/landing`;
     if (navigator.share) {
       try {
         await navigator.share({

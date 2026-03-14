@@ -114,7 +114,6 @@ export default function PhotoUploader({ onPhotoSelected, previewUrl, onClear, up
         id="photo-upload-input"
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleChange}
         aria-label="Upload a photo"
         className="hidden"
